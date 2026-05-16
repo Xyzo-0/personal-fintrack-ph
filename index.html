@@ -527,7 +527,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- ADD GOAL -->
 <div class="modal-overlay" id="modal-goal">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">🎯 Add Savings Goal</span><button class="modal-close" onclick="closeModal('modal-goal')">×</button></div>
+    <div class="modal-header"><span class="modal-title">🎯 Add Savings Goal</span></div>
     <div class="modal-body">
       <div class="form-row"><div class="field-group" style="grid-column:span 2;"><label>Goal Name</label><input type="text" id="goal-name" placeholder="e.g. Emergency Fund…"></div></div>
       <div class="form-row">
@@ -547,7 +547,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- ADD DEBT -->
 <div class="modal-overlay" id="modal-debt">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">💳 Add Debt</span><button class="modal-close" onclick="closeModal('modal-debt')">×</button></div>
+    <div class="modal-header"><span class="modal-title">💳 Add Debt</span></div>
     <div class="modal-body">
       <div class="form-row">
         <div class="field-group"><label>Debt Name</label><input type="text" id="debt-name" placeholder="e.g. Credit Card A"></div>
@@ -584,7 +584,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="modal" style="max-width:500px;">
     <div class="modal-header" style="padding:14px 18px 12px;">
       <span class="modal-title" style="font-size:14px;">⚙️ Settings</span>
-      <button class="modal-close" onclick="closeModal('modal-settings')">×</button>
     </div>
 
     <div class="modal-settings-inner">
@@ -674,7 +673,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal" style="max-width:400px;">
-    <div class="modal-header"><span class="modal-title" id="confirm-title">Confirm Action</span><button class="modal-close" onclick="closeModal('modal-confirm')">×</button></div>
+    <div class="modal-header"><span class="modal-title" id="confirm-title">Confirm Action</span></div>
     <div class="modal-body"><p id="confirm-msg" style="color:var(--mid-grey);font-size:14px;line-height:1.6;"></p></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Cancel</button>
