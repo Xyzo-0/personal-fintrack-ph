@@ -559,6 +559,26 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="field-group"><label>Minimum Payment (₱)</label><input type="number" id="debt-minpay" placeholder="0.00" min="0"></div>
         <div class="field-group"><label>Extra Payment (₱)</label><input type="number" id="debt-extra" placeholder="0.00" min="0"></div>
       </div>
+      <div class="form-row">
+        <div class="field-group">
+          <label>Due Month</label>
+          <select id="debt-due-month">
+            <option value="">— Select Month —</option>
+            <option>Jan</option><option>Feb</option><option>Mar</option>
+            <option>Apr</option><option>May</option><option>Jun</option>
+            <option>Jul</option><option>Aug</option><option>Sep</option>
+            <option>Oct</option><option>Nov</option><option>Dec</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Due Year</label>
+          <input type="number" id="debt-due-year" placeholder="e.g. 2027" min="2020" max="2100">
+        </div>
+        <div class="field-group">
+          <label>Due Day (optional)</label>
+          <input type="number" id="debt-due-day" placeholder="1–31" min="1" max="31">
+        </div>
+      </div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-debt')">Cancel</button><button class="btn btn-primary" onclick="addDebt()">Add Debt</button></div>
   </div>
@@ -1242,13 +1262,25 @@ function openAddDebtModal(){
   document.getElementById('debt-rate').value='';
   document.getElementById('debt-minpay').value='';
   document.getElementById('debt-extra').value='';
+  document.getElementById('debt-due-month').value='';
+  document.getElementById('debt-due-year').value='';
+  document.getElementById('debt-due-day').value='';
   openModal('modal-debt');
 }
 function addDebt(){
   if(isReadonly()){showToast('🔒 Read-only');return;}
-  const name=document.getElementById('debt-name').value.trim();const creditor=document.getElementById('debt-creditor').value.trim();const original=parseFloat(document.getElementById('debt-original').value)||0;const balance=parseFloat(document.getElementById('debt-original').value)||0;const rate=parseFloat(document.getElementById('debt-rate').value)||0;const minPay=parseFloat(document.getElementById('debt-minpay').value)||0;const extra=parseFloat(document.getElementById('debt-extra').value)||0;
+  const name=document.getElementById('debt-name').value.trim();
+  const creditor=document.getElementById('debt-creditor').value.trim();
+  const original=parseFloat(document.getElementById('debt-original').value)||0;
+  const balance=parseFloat(document.getElementById('debt-original').value)||0;
+  const rate=parseFloat(document.getElementById('debt-rate').value)||0;
+  const minPay=parseFloat(document.getElementById('debt-minpay').value)||0;
+  const extra=parseFloat(document.getElementById('debt-extra').value)||0;
+  const dueMonth=document.getElementById('debt-due-month').value;
+  const dueYear=document.getElementById('debt-due-year').value;
+  const dueDay=document.getElementById('debt-due-day').value;
   if(!name||!original){showToast('⚠️ Fill required fields');return;}
-  state.debts.push({id:uid(),name,creditor,original,balance,rate,minPay,extra});saveData();closeModal('modal-debt');showToast('💳 Debt added!');renderDebt();
+  state.debts.push({id:uid(),name,creditor,original,balance,rate,minPay,extra,dueMonth,dueYear,dueDay});saveData();closeModal('modal-debt');showToast('💳 Debt added!');renderDebt();
 }
 function deleteDebt(id){if(isReadonly()){showToast('🔒 Read-only');return;}state.debts=state.debts.filter(d=>d.id!==id);saveData();renderDebt();showToast('🗑️ Debt removed');}
 function openPayDebtModal(id){
@@ -1286,7 +1318,7 @@ function renderDebt(){
   list.innerHTML=state.debts.map(d=>{
     const p=d.original>0?Math.min(1-d.balance/d.original,1):1;const tp=(d.minPay||0)+(d.extra||0);const ml=tp>0?Math.ceil(d.balance/tp):'—';const rd=d.rate?((d.rate<1?d.rate:d.rate)).toFixed(2)+'%':'—';
     const editRow=ro?'':`<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;align-items:center;justify-content:flex-end;"><button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openPayDebtModal('${d.id}')">💳 Pay Debt</button><button class="btn btn-danger" style="padding:4px 8px;font-size:11px;" onclick="deleteDebt('${d.id}')">✕</button></div>`;
-    return`<div class="debt-card"><div class="debt-header"><div><div class="debt-name">${d.name}</div><div class="debt-creditor">${d.creditor||'—'}</div></div><div style="text-align:right;"><div class="debt-balance">${peso(d.balance)}</div><div style="font-size:11px;color:var(--mid-grey);">Balance</div></div></div><div class="progress-wrap" style="margin-bottom:14px;"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:linear-gradient(90deg,#2E7D32,#66bb6a);"></div></div><div class="debt-details"><div><div class="debt-detail-label">Original</div><div class="debt-detail-value">${peso(d.original)}</div></div><div><div class="debt-detail-label">Interest/mo</div><div class="debt-detail-value">${rd}</div></div><div><div class="debt-detail-label">Min Pay</div><div class="debt-detail-value">${peso(d.minPay)}</div></div><div><div class="debt-detail-label">% Paid</div><div class="debt-detail-value" style="color:#66bb6a;">${pct(p)}</div></div><div><div class="debt-detail-label">Mo. Left</div><div class="debt-detail-value">${ml}</div></div><div><div class="debt-detail-label">Status</div><div class="debt-detail-value" style="font-size:11px;">${debtStatus(d)}</div></div></div>${editRow}</div>`;
+    return`<div class="debt-card"><div class="debt-header"><div><div class="debt-name">${d.name}</div><div class="debt-creditor">${d.creditor||'—'}</div></div><div style="text-align:right;"><div class="debt-balance">${peso(d.balance)}</div><div style="font-size:11px;color:var(--mid-grey);">Balance</div></div></div><div class="progress-wrap" style="margin-bottom:14px;"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:linear-gradient(90deg,#2E7D32,#66bb6a);"></div></div><div class="debt-details"><div><div class="debt-detail-label">Original</div><div class="debt-detail-value">${peso(d.original)}</div></div><div><div class="debt-detail-label">Interest/mo</div><div class="debt-detail-value">${rd}</div></div><div><div class="debt-detail-label">Min Pay</div><div class="debt-detail-value">${peso(d.minPay)}</div></div><div><div class="debt-detail-label">% Paid</div><div class="debt-detail-value" style="color:#66bb6a;">${pct(p)}</div></div><div><div class="debt-detail-label">Mo. Left</div><div class="debt-detail-value">${ml}</div></div><div><div class="debt-detail-label">Status</div><div class="debt-detail-value" style="font-size:11px;">${debtStatus(d)}</div></div></div>${(d.dueMonth||d.dueYear)?`<div style="margin-top:10px;font-size:11px;color:var(--mid-grey);">📅 Due: <span style="color:var(--gold);">${[d.dueMonth,d.dueDay?d.dueDay:'',d.dueYear].filter(Boolean).join(' ')}</span></div>`:''}${editRow}</div>`;
   }).join('');
 }
 
