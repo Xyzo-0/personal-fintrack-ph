@@ -677,9 +677,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
 
       <div class="settings-row">
+        <div><div class="settings-row-label">📅 Selected Year</div><div class="settings-row-sub">All data management and storage stats below apply to this year</div></div>
+        <div class="settings-row-right">
+          <select class="settings-year-select" id="settings-active-year" onchange="onSettingsYearChange()"></select>
+        </div>
+      </div>
+      
+      <div class="settings-row">
         <div><div class="settings-row-label">📤 Export Year Data</div><div class="settings-row-sub">Download a year's data as JSON</div></div>
         <div class="settings-row-right">
-          <select class="settings-year-select" id="export-year-select"></select>
           <button class="btn btn-ghost btn-sm" onclick="exportYearData()">Export</button>
         </div>
       </div>
@@ -690,7 +696,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <div class="settings-row-sub">Erase all data for a year (transactions, budgets, goals, debts, net worth, no-spend)</div>
         </div>
         <div class="settings-row-right">
-          <select class="settings-year-select" id="clear-year-select"></select>
           <button class="btn btn-danger btn-sm" onclick="clearYearData()">Clear</button>
         </div>
       </div>
@@ -698,7 +703,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="settings-row">
         <div><div class="settings-row-label">🔒 Finalize Year</div><div class="settings-row-sub">Permanently lock a past year — cannot be undone</div></div>
         <div class="settings-row-right">
-          <select class="settings-year-select" id="finalize-year-select"></select>
           <button class="btn btn-purple btn-sm" onclick="finalizeYear()">Finalize</button>
         </div>
       </div>
@@ -953,6 +957,19 @@ function createAccount(){
 
 function getAccounts(){return LS.get('accounts')||{...USERS};}
 
+function onSettingsYearChange(){
+  const y=parseInt(document.getElementById('settings-active-year').value);
+  updateSettingsStats(y);
+}
+
+function updateSettingsStats(y){
+  const txCount=state.transactions.filter(t=>(t.year||new Date(t.date).getFullYear())===y).length;
+  document.getElementById('settings-tx-count').textContent=txCount;
+  document.getElementById('settings-goals-count').textContent=state.goals.length;
+  document.getElementById('settings-debts-count').textContent=state.debts.length;
+  document.getElementById('settings-finalized-list').textContent=state.finalizedYears.length?state.finalizedYears.join(', '):'None';
+}
+  
 function getStateForYear(y){if(importedYearsData[y])return importedYearsData[y];return state;}
 function txForYear(y){const s=getStateForYear(y);return(s.transactions||[]).filter(t=>(t.year||new Date(t.date).getFullYear())===y);}
 
@@ -1013,10 +1030,6 @@ function openSettingsModal(){
   document.getElementById('settings-popup').classList.remove('open');
   document.getElementById('user-menu-icon').textContent='▼';
   document.getElementById('settings-user-label').textContent=currentUser;
-  document.getElementById('settings-tx-count').textContent=state.transactions.length;
-  document.getElementById('settings-goals-count').textContent=state.goals.length;
-  document.getElementById('settings-debts-count').textContent=state.debts.length;
-  document.getElementById('settings-finalized-list').textContent=state.finalizedYears.length?state.finalizedYears.join(', '):'None';
   const impYears=Object.keys(importedYearsData);
   document.getElementById('settings-imported-list').textContent=impYears.length?impYears.join(', '):'None';
 
@@ -1024,21 +1037,22 @@ function openSettingsModal(){
   const finalizable=allYears.filter(y=>y<CURRENT_YEAR&&!isYearFinalized(y));
   const clearable=allYears.filter(y=>!isYearFinalized(y));
 
-  ['export-year-select','clear-year-select'].forEach(id=>{
-    const sel=document.getElementById(id);sel.innerHTML='';
-    const list=id==='clear-year-select'?clearable:allYears;
-    list.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y+(isYearFinalized(y)?' 🔒':'')+(importedYearsData[y]?' 📥':'');sel.appendChild(o);});
+  const aySel=document.getElementById('settings-active-year');
+  aySel.innerHTML='';
+  allYears.forEach(y=>{
+    const o=document.createElement('option');
+    o.value=y;
+    o.textContent=y+(isYearFinalized(y)?' 🔒':'')+(importedYearsData[y]?' 📥':'');
+    aySel.appendChild(o);
   });
-
-  const fsel=document.getElementById('finalize-year-select');fsel.innerHTML='';
-  if(finalizable.length){finalizable.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;fsel.appendChild(o);});}
-  else{const o=document.createElement('option');o.value='';o.textContent='No past years available';fsel.appendChild(o);}
+  aySel.value=selectedYear;
+  updateSettingsStats(selectedYear);
 
   openModal('modal-settings');
 }
 
 function exportYearData(){
-  const y=parseInt(document.getElementById('export-year-select').value);if(!y){showToast('⚠️ Select a year');return;}
+  const y=parseInt(document.getElementById('settings-active-year').value);if(!y){showToast('⚠️ Select a year');return;}
   let exportData;
   if(importedYearsData[y]){exportData=importedYearsData[y];}
   else{exportData={year:y,exportedAt:new Date().toISOString(),transactions:state.transactions.filter(t=>(t.year||new Date(t.date).getFullYear())===y),goals:state.goals,debts:state.debts,budgets:state.budgets,netWorth:state.netWorth,nwItems:state.nwItems,nwHistory:state.nwHistory,noSpend:state.noSpend,finalized:isYearFinalized(y)};}
@@ -1064,7 +1078,7 @@ function importYearData(input){
 
 // ── CLEAR YEAR DATA — comprehensive ──
 function clearYearData(){
-  const y=parseInt(document.getElementById('clear-year-select').value);
+  const y=parseInt(document.getElementById('settings-active-year').value);
   if(!y){showToast('⚠️ Select a year');return;}
   if(isYearFinalized(y)){showToast('🔒 Cannot clear a finalized year');return;}
 
@@ -1122,7 +1136,7 @@ function clearYearData(){
 }
 
 function finalizeYear(){
-  const y=parseInt(document.getElementById('finalize-year-select').value);
+  const y=parseInt(document.getElementById('settings-active-year').value);
   if(!y||isNaN(y)){showToast('⚠️ No past year available to finalize');return;}
   if(y>=CURRENT_YEAR){showToast('⚠️ Cannot finalize current or future years');return;}
   if(isYearFinalized(y)){showToast(`🔒 ${y} is already finalized`);return;}
