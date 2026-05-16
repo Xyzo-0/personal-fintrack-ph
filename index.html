@@ -72,7 +72,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .page-header p{color:var(--mid-grey);font-size:13px;margin-top:4px}
 .date-badge{background:rgba(27,42,74,0.8);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--teal-light)}
 
-/* YEAR SELECTOR — 3 years only */
+/* YEAR SELECTOR */
 .dash-header-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
 .year-selector-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .year-sel-label{font-size:10px;font-weight:600;color:var(--dark-grey);letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;white-space:nowrap}
@@ -234,14 +234,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .readonly-overlay{position:absolute;inset:0;background:rgba(147,112,219,0.04);border-radius:16px;pointer-events:none;z-index:10}
 .section-readonly-note{background:rgba(147,112,219,0.08);border:1px solid rgba(147,112,219,0.25);border-radius:8px;padding:8px 14px;font-size:12px;color:#b39ddb;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 
-/* SETTINGS MODAL */
-.settings-section-title{font-size:10px;font-weight:600;color:var(--dark-grey);letter-spacing:1.5px;text-transform:uppercase;padding:14px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(176,190,197,0.05)}
+/* ── SETTINGS MODAL — compact ── */
+.modal-settings-inner{max-height:80vh;overflow-y:auto;padding:0}
+.settings-section-title{font-size:9px;font-weight:700;color:var(--dark-grey);letter-spacing:1.8px;text-transform:uppercase;padding:10px 16px 5px;border-bottom:1px solid var(--border);margin:0;background:rgba(15,27,53,0.4)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid rgba(176,190,197,0.05);gap:8px}
 .settings-row:last-child{border-bottom:none}
-.settings-row-label{font-size:13px;color:var(--white)}
-.settings-row-sub{font-size:11px;color:var(--dark-grey);margin-top:2px}
-.settings-year-select{background:rgba(15,27,53,0.8);border:1px solid rgba(176,190,197,0.2);border-radius:6px;padding:7px 10px;color:var(--white);font-family:'Outfit',sans-serif;font-size:13px;outline:none;cursor:pointer}
+.settings-row-label{font-size:12px;color:var(--white);font-weight:500;white-space:nowrap}
+.settings-row-sub{font-size:10px;color:var(--dark-grey);margin-top:1px}
+.settings-row-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.settings-year-select{background:rgba(15,27,53,0.8);border:1px solid rgba(176,190,197,0.2);border-radius:5px;padding:4px 7px;color:var(--white);font-family:'Outfit',sans-serif;font-size:12px;outline:none;cursor:pointer}
 .settings-year-select option{background:var(--navy-mid)}
+.settings-stat{font-family:'DM Mono',monospace;font-size:12px;color:var(--teal-light)}
+.settings-stat.purple{color:#b39ddb}
+.settings-stat.gold{color:var(--gold)}
+/* compact buttons inside settings */
+.btn-sm{padding:5px 11px;font-size:11px;border-radius:6px}
 </style>
 </head>
 <body>
@@ -486,7 +493,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- ADD TRANSACTION -->
 <div class="modal-overlay" id="modal-tx">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">➕ Add Transaction</span><button class="modal-close" onclick="closeModal('modal-tx')">×</button></div>
+    <div class="modal-header"><span class="modal-title">➕ Add Transaction</span></div>
     <div class="modal-body">
       <div class="form-row">
         <div class="field-group"><label>Date</label><input type="date" id="tx-date"></div>
@@ -572,20 +579,27 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
 </div>
 
-<!-- SETTINGS MODAL -->
+<!-- SETTINGS MODAL — compact -->
 <div class="modal-overlay" id="modal-settings">
-  <div class="modal" style="max-width:560px;">
-    <div class="modal-header"><span class="modal-title">⚙️ Settings</span><button class="modal-close" onclick="closeModal('modal-settings')">×</button></div>
-    <div class="modal-body">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header" style="padding:14px 18px 12px;">
+      <span class="modal-title" style="font-size:14px;">⚙️ Settings</span>
+      <button class="modal-close" onclick="closeModal('modal-settings')">×</button>
+    </div>
+
+    <div class="modal-settings-inner">
 
       <!-- General -->
       <div class="settings-section-title">General</div>
       <div class="settings-row">
         <div><div class="settings-row-label">Logged in as</div><div class="settings-row-sub" id="settings-user-label">—</div></div>
-        <button class="btn btn-danger" onclick="doLogout();closeModal('modal-settings');">Sign Out</button>
+        <div class="settings-row-right">
+          <button class="btn btn-danger btn-sm" onclick="doLogout();closeModal('modal-settings');">Sign Out</button>
+        </div>
       </div>
       <div class="settings-row">
-        <div><div class="settings-row-label">App Version</div><div class="settings-row-sub">FinTrack PH v2.0</div></div>
+        <div class="settings-row-label">App Version</div>
+        <span class="settings-stat">FinTrack PH v2.0</span>
       </div>
 
       <!-- Data Management -->
@@ -593,61 +607,67 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
       <div class="settings-row">
         <div><div class="settings-row-label">📥 Import Year Data</div><div class="settings-row-sub">Import a previously exported year's JSON file</div></div>
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div class="settings-row-right">
           <input type="file" id="import-file-input" accept=".json" style="display:none;" onchange="importYearData(this)">
-          <button class="btn btn-ghost" onclick="document.getElementById('import-file-input').click()">Browse</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file-input').click()">Browse</button>
         </div>
       </div>
 
       <div class="settings-row">
         <div><div class="settings-row-label">📤 Export Year Data</div><div class="settings-row-sub">Download a year's data as JSON</div></div>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div class="settings-row-right">
           <select class="settings-year-select" id="export-year-select"></select>
-          <button class="btn btn-ghost" onclick="exportYearData()">Export</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportYearData()">Export</button>
         </div>
       </div>
 
       <div class="settings-row">
-        <div><div class="settings-row-label">🗑️ Clear Year Data</div><div class="settings-row-sub">Erase all transactions for a year (cannot clear finalized)</div></div>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div>
+          <div class="settings-row-label">🗑️ Clear Year Data</div>
+          <div class="settings-row-sub">Erase all data for a year (transactions, budgets, goals, debts, net worth, no-spend)</div>
+        </div>
+        <div class="settings-row-right">
           <select class="settings-year-select" id="clear-year-select"></select>
-          <button class="btn btn-danger" onclick="clearYearData()">Clear</button>
+          <button class="btn btn-danger btn-sm" onclick="clearYearData()">Clear</button>
         </div>
       </div>
 
       <div class="settings-row">
         <div><div class="settings-row-label">🔒 Finalize Year</div><div class="settings-row-sub">Permanently lock a past year — cannot be undone</div></div>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div class="settings-row-right">
           <select class="settings-year-select" id="finalize-year-select"></select>
-          <button class="btn btn-purple" onclick="finalizeYear()">Finalize</button>
+          <button class="btn btn-purple btn-sm" onclick="finalizeYear()">Finalize</button>
         </div>
       </div>
 
       <!-- Storage -->
       <div class="settings-section-title">Storage</div>
       <div class="settings-row">
-        <div><div class="settings-row-label">Transactions</div></div>
-        <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--teal-light);" id="settings-tx-count">—</span>
+        <div class="settings-row-label">Transactions</div>
+        <span class="settings-stat" id="settings-tx-count">—</span>
       </div>
       <div class="settings-row">
-        <div><div class="settings-row-label">Savings Goals</div></div>
-        <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--teal-light);" id="settings-goals-count">—</span>
+        <div class="settings-row-label">Savings Goals</div>
+        <span class="settings-stat" id="settings-goals-count">—</span>
       </div>
       <div class="settings-row">
-        <div><div class="settings-row-label">Active Debts</div></div>
-        <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--teal-light);" id="settings-debts-count">—</span>
+        <div class="settings-row-label">Active Debts</div>
+        <span class="settings-stat" id="settings-debts-count">—</span>
       </div>
       <div class="settings-row">
-        <div><div class="settings-row-label">Finalized Years</div></div>
-        <span style="font-family:'DM Mono',monospace;font-size:13px;color:#b39ddb;" id="settings-finalized-list">None</span>
+        <div class="settings-row-label">Finalized Years</div>
+        <span class="settings-stat purple" id="settings-finalized-list">None</span>
       </div>
       <div class="settings-row">
-        <div><div class="settings-row-label">Imported Years (session)</div></div>
-        <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);" id="settings-imported-list">None</span>
+        <div class="settings-row-label">Imported Years (session)</div>
+        <span class="settings-stat gold" id="settings-imported-list">None</span>
       </div>
 
+    </div><!-- end modal-settings-inner -->
+
+    <div class="modal-footer" style="padding:10px 18px;">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-settings')">Close</button>
     </div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-settings')">Close</button></div>
   </div>
 </div>
 
@@ -678,22 +698,25 @@ const LS={
   remove:k=>localStorage.removeItem('ft_'+k)
 };
 
+const DEFAULT_BUDGETS=()=>{const bd={Housing:8000,Food:5000,Transport:2000,Utilities:2500,Health:1500,Lifestyle:2000,'Debt Payment':5000,Savings:5000,Education:1000,Other:1000};const r={};MONTHS.forEach(m=>{r[m]={...bd};});return r;};
+const DEFAULT_NW_ASSETS=()=>({'BDO Savings':35000,'BPI Savings':12000,'GCash / Maya':5000,'SSS / Pag-IBIG':18000,'Stocks / UITF':25000,'Real Estate':0,'Vehicle':120000,'Other Assets':0});
+const DEFAULT_NW_LIABS=()=>({'BDO Credit Card':11500,'BPI Credit Card':0,'Personal Loan':42000,'Car Loan':175000,'Home Loan':0,'Other Debts':0});
+const DEFAULT_NW_HISTORY=()=>{const h={};MONTHS.forEach(m=>{h[m]={assets:Math.round(180000+Math.random()*20000),liabilities:Math.round(220000-Math.random()*5000)};});return h;};
+
 let state={
   transactions:[],goals:[],debts:[],
   budgets:{},netWorth:{assets:{},liabilities:{}},
   noSpend:{},nwHistory:{},
   accountCreatedYear:null,
-  finalizedYears:[],   // years permanently locked
-  nwItems:{assets:{},liabilities:{}} // dynamic NW items
+  finalizedYears:[],
+  nwItems:{assets:{},liabilities:{}}
 };
 let currentUser=null;
 let activeBudgetMonth='Jan';
-let editNWSide='assets'; // current side being edited in NW modal
+let editNWSide='assets';
 const CURRENT_YEAR=new Date().getFullYear();
 let selectedYear=CURRENT_YEAR;
-
-// Session-only imported years (not persisted)
-let importedYearsData={}; // { year: fullStateSnapshot }
+let importedYearsData={};
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -714,11 +737,9 @@ function populateFilterMonths(){
 }
 
 // ═══════════════════════════════════════════════
-// YEAR LOGIC — exactly 3 years: past, current, future
+// YEAR LOGIC
 // ═══════════════════════════════════════════════
 function getDisplayYears(){
-  // Always show: CURRENT_YEAR-1, CURRENT_YEAR, CURRENT_YEAR+1
-  // Plus any imported years (session-only) and finalized years
   const base=[CURRENT_YEAR-1, CURRENT_YEAR, CURRENT_YEAR+1];
   const extra=[...state.finalizedYears,...Object.keys(importedYearsData).map(Number)];
   const all=[...new Set([...base,...extra])].sort((a,b)=>a-b);
@@ -729,69 +750,35 @@ function buildYearPills(){
   const wrap=document.getElementById('year-pills');if(!wrap)return;
   const years=getDisplayYears();
   wrap.innerHTML=years.map(y=>{
-    const isActive=y===selectedYear;
-    const isCurrent=y===CURRENT_YEAR;
-    const isFinalized=state.finalizedYears.includes(y);
-    const isImported=importedYearsData[y]!==undefined;
+    const isActive=y===selectedYear;const isCurrent=y===CURRENT_YEAR;
+    const isFinalized=state.finalizedYears.includes(y);const isImported=importedYearsData[y]!==undefined;
     let cls='year-pill';
-    if(isActive)cls+=' active';
-    if(isCurrent)cls+=' is-current-year';
-    if(isFinalized)cls+=' is-finalized';
-    if(isImported)cls+=' is-imported';
+    if(isActive)cls+=' active';if(isCurrent)cls+=' is-current-year';
+    if(isFinalized)cls+=' is-finalized';if(isImported)cls+=' is-imported';
     let tag='';
-    if(isFinalized)tag=' 🔒';
-    else if(isCurrent)tag=' ●';
-    else if(y>CURRENT_YEAR)tag=' ↗';
+    if(isFinalized)tag=' 🔒';else if(isCurrent)tag=' ●';else if(y>CURRENT_YEAR)tag=' ↗';
     if(isImported)tag+=' 📥';
-    return `<div class="${cls}" onclick="selectYear(${y})"><span class="ydot"></span>${y}${tag}</div>`;
+    return`<div class="${cls}" onclick="selectYear(${y})"><span class="ydot"></span>${y}${tag}</div>`;
   }).join('');
 }
 
-function selectYear(y){
-  selectedYear=y;
-  buildYearPills();
-  updateYearBanner();
-  updateSidebarYear();
-  renderAll();
-}
-
+function selectYear(y){selectedYear=y;buildYearPills();updateYearBanner();updateSidebarYear();renderAll();}
 function isYearFinalized(y){return state.finalizedYears.includes(y);}
-function isYearImported(y){return importedYearsData[y]!==undefined && !getPersistedYears().includes(y);}
-
-function getPersistedYears(){
-  // Years the user has actually saved data for
-  const txYears=[...new Set(state.transactions.map(t=>t.year||new Date(t.date).getFullYear()))];
-  return txYears;
-}
+function isYearImported(y){return importedYearsData[y]!==undefined&&!getPersistedYears().includes(y);}
+function getPersistedYears(){return[...new Set(state.transactions.map(t=>t.year||new Date(t.date).getFullYear()))];}
 
 function updateYearBanner(){
-  const yb=document.getElementById('year-banner');
-  const fb=document.getElementById('finalized-banner');
-  const yt=document.getElementById('year-banner-text');
-  const ft=document.getElementById('finalized-banner-text');
+  const yb=document.getElementById('year-banner');const fb=document.getElementById('finalized-banner');
+  const yt=document.getElementById('year-banner-text');const ft=document.getElementById('finalized-banner-text');
   if(!yb)return;
   yb.classList.remove('show');fb.classList.remove('show');
-  if(isYearFinalized(selectedYear)){
-    fb.classList.add('show');
-    ft.textContent=`${selectedYear} is finalized and read-only. Data is permanently locked.`;
-  } else if(isYearImported(selectedYear)){
-    yb.classList.add('show');
-    yt.textContent=`Viewing imported data for ${selectedYear} (session only — not saved to account).`;
-  } else if(selectedYear===CURRENT_YEAR){
-    // no banner
-  } else if(selectedYear>CURRENT_YEAR){
-    yb.classList.add('show');
-    yt.textContent=`Viewing future year ${selectedYear} — add transactions to start tracking.`;
-  } else {
-    yb.classList.add('show');
-    yt.textContent=`Viewing historical data for ${selectedYear}. All figures reflect that year only.`;
-  }
+  if(isYearFinalized(selectedYear)){fb.classList.add('show');ft.textContent=`${selectedYear} is finalized and read-only. Data is permanently locked.`;}
+  else if(isYearImported(selectedYear)){yb.classList.add('show');yt.textContent=`Viewing imported data for ${selectedYear} (session only — not saved to account).`;}
+  else if(selectedYear>CURRENT_YEAR){yb.classList.add('show');yt.textContent=`Viewing future year ${selectedYear} — add transactions to start tracking.`;}
+  else if(selectedYear<CURRENT_YEAR){yb.classList.add('show');yt.textContent=`Viewing historical data for ${selectedYear}. All figures reflect that year only.`;}
 }
 
-function updateSidebarYear(){
-  const el=document.getElementById('sidebar-year-label');
-  if(el)el.textContent=`${selectedYear} · Personal Finance`;
-}
+function updateSidebarYear(){const el=document.getElementById('sidebar-year-label');if(el)el.textContent=`${selectedYear} · Personal Finance`;}
 
 // ═══════════════════════════════════════════════
 // AUTH
@@ -800,36 +787,27 @@ function doLogin(){
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value;
   const err=document.getElementById('login-error');
-  if(USERS[u]&&USERS[u]===p){
-    err.style.display='none';currentUser=u;LS.set('session',u);loadUserData();enterApp();
-  } else {
-    err.style.display='block';document.getElementById('login-pass').value='';
-  }
+  if(USERS[u]&&USERS[u]===p){err.style.display='none';currentUser=u;LS.set('session',u);loadUserData();enterApp();}
+  else{err.style.display='block';document.getElementById('login-pass').value='';}
 }
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('login-page').style.display!=='none')doLogin();
-});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-page').style.display!=='none')doLogin();});
 
 function doLogout(){
   LS.set('session',null);LS.remove('session');
-  importedYearsData={}; // clear session imports on logout
+  importedYearsData={};
   document.getElementById('app').style.display='none';
   document.getElementById('login-page').style.display='flex';
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
+  document.getElementById('login-user').value='';document.getElementById('login-pass').value='';
   document.getElementById('settings-popup').classList.remove('open');
 }
 
 function enterApp(){
-  document.getElementById('login-page').style.display='none';
-  document.getElementById('app').style.display='block';
+  document.getElementById('login-page').style.display='none';document.getElementById('app').style.display='block';
   const n=document.getElementById('sidebar-username');const av=document.getElementById('sidebar-avatar');
   if(n)n.textContent=currentUser.charAt(0).toUpperCase()+currentUser.slice(1);
   if(av)av.textContent=currentUser.charAt(0).toUpperCase();
   selectedYear=CURRENT_YEAR;
-  buildYearPills();updateYearBanner();updateSidebarYear();
-  buildNWPanels();
-  renderAll();
+  buildYearPills();updateYearBanner();updateSidebarYear();buildNWPanels();renderAll();
 }
 
 // ═══════════════════════════════════════════════
@@ -842,35 +820,21 @@ function loadUserData(){
     if(!state.finalizedYears)state.finalizedYears=[];
     if(!state.nwItems)state.nwItems={assets:{...state.netWorth.assets},liabilities:{...state.netWorth.liabilities}};
     if(!state.accountCreatedYear){state.accountCreatedYear=inferYear();saveData();}
-  } else {
-    seedSampleData();
-  }
+  } else {seedSampleData();}
 }
 
 function inferYear(){
-  if(state.transactions&&state.transactions.length){
-    const ys=state.transactions.map(t=>new Date(t.date).getFullYear()).filter(Boolean);
-    if(ys.length)return Math.min(...ys);
-  }
+  if(state.transactions&&state.transactions.length){const ys=state.transactions.map(t=>new Date(t.date).getFullYear()).filter(Boolean);if(ys.length)return Math.min(...ys);}
   return CURRENT_YEAR;
 }
 
 function saveData(){LS.set('data_'+currentUser,state);}
 
-function getStateForYear(y){
-  // If imported, return that snapshot's transactions for the year
-  if(importedYearsData[y])return importedYearsData[y];
-  return state;
-}
-
-function txForYear(y){
-  const s=getStateForYear(y);
-  return (s.transactions||[]).filter(t=>(t.year||new Date(t.date).getFullYear())===y);
-}
+function getStateForYear(y){if(importedYearsData[y])return importedYearsData[y];return state;}
+function txForYear(y){const s=getStateForYear(y);return(s.transactions||[]).filter(t=>(t.year||new Date(t.date).getFullYear())===y);}
 
 function seedSampleData(){
-  state.accountCreatedYear=2025;
-  state.finalizedYears=[];
+  state.accountCreatedYear=2025;state.finalizedYears=[];
   state.transactions=[
     {id:uid(),date:'2025-01-05',month:'Jan',year:2025,desc:'Monthly Salary',type:'Income',category:'Income',account:'BDO Savings',amount:25000,notes:'January salary'},
     {id:uid(),date:'2025-01-10',month:'Jan',year:2025,desc:'Groceries',type:'Expense',category:'Food',account:'GCash',amount:2500,notes:''},
@@ -898,13 +862,11 @@ function seedSampleData(){
     {id:uid(),name:'Personal Loan',creditor:'RCBC',original:50000,balance:42000,rate:1,minPay:2000,extra:500},
     {id:uid(),name:'Car Loan',creditor:'Toyota',original:200000,balance:175000,rate:0.7,minPay:5000,extra:0},
   ];
-  const bd={Housing:8000,Food:5000,Transport:2000,Utilities:2500,Health:1500,Lifestyle:2000,'Debt Payment':5000,Savings:5000,Education:1000,Other:1000};
-  MONTHS.forEach(m=>{state.budgets[m]={...bd};});
-  const assetKeys={'BDO Savings':35000,'BPI Savings':12000,'GCash / Maya':5000,'SSS / Pag-IBIG':18000,'Stocks / UITF':25000,'Real Estate':0,'Vehicle':120000,'Other Assets':0};
-  const liabKeys={'BDO Credit Card':11500,'BPI Credit Card':0,'Personal Loan':42000,'Car Loan':175000,'Home Loan':0,'Other Debts':0};
+  state.budgets=DEFAULT_BUDGETS();
+  const assetKeys=DEFAULT_NW_ASSETS();const liabKeys=DEFAULT_NW_LIABS();
   state.netWorth={assets:{...assetKeys},liabilities:{...liabKeys}};
   state.nwItems={assets:{...assetKeys},liabilities:{...liabKeys}};
-  MONTHS.forEach(m=>{state.nwHistory[m]={assets:Math.round(180000+Math.random()*20000),liabilities:Math.round(220000-Math.random()*5000)};});
+  state.nwHistory=DEFAULT_NW_HISTORY();
   state.noSpend={};
   saveData();
 }
@@ -913,19 +875,12 @@ function seedSampleData(){
 // SETTINGS POPUP
 // ═══════════════════════════════════════════════
 function toggleSettingsPopup(){
-  const p=document.getElementById('settings-popup');
-  const ic=document.getElementById('user-menu-icon');
-  const open=p.classList.toggle('open');
-  ic.textContent=open?'▲':'▼';
+  const p=document.getElementById('settings-popup');const ic=document.getElementById('user-menu-icon');
+  const open=p.classList.toggle('open');ic.textContent=open?'▲':'▼';
 }
-
 document.addEventListener('click',e=>{
-  const card=document.getElementById('user-card');
-  const popup=document.getElementById('settings-popup');
-  if(!card.contains(e.target)&&!popup.contains(e.target)){
-    popup.classList.remove('open');
-    document.getElementById('user-menu-icon').textContent='▼';
-  }
+  const card=document.getElementById('user-card');const popup=document.getElementById('settings-popup');
+  if(!card.contains(e.target)&&!popup.contains(e.target)){popup.classList.remove('open');document.getElementById('user-menu-icon').textContent='▼';}
 });
 
 // ═══════════════════════════════════════════════
@@ -934,11 +889,7 @@ document.addEventListener('click',e=>{
 function openSettingsModal(){
   document.getElementById('settings-popup').classList.remove('open');
   document.getElementById('user-menu-icon').textContent='▼';
-
-  // Populate user label
   document.getElementById('settings-user-label').textContent=currentUser;
-
-  // Stats
   document.getElementById('settings-tx-count').textContent=state.transactions.length;
   document.getElementById('settings-goals-count').textContent=state.goals.length;
   document.getElementById('settings-debts-count').textContent=state.debts.length;
@@ -946,48 +897,28 @@ function openSettingsModal(){
   const impYears=Object.keys(importedYearsData);
   document.getElementById('settings-imported-list').textContent=impYears.length?impYears.join(', '):'None';
 
-  // Populate year selects
   const allYears=getDisplayYears();
-  const pastYears=allYears.filter(y=>y<CURRENT_YEAR&&!isYearFinalized(y));
   const finalizable=allYears.filter(y=>y<CURRENT_YEAR&&!isYearFinalized(y));
-  const exportable=allYears;
   const clearable=allYears.filter(y=>!isYearFinalized(y));
 
   ['export-year-select','clear-year-select'].forEach(id=>{
     const sel=document.getElementById(id);sel.innerHTML='';
-    const list=id==='clear-year-select'?clearable:exportable;
+    const list=id==='clear-year-select'?clearable:allYears;
     list.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y+(isYearFinalized(y)?' 🔒':'')+(importedYearsData[y]?' 📥':'');sel.appendChild(o);});
   });
 
   const fsel=document.getElementById('finalize-year-select');fsel.innerHTML='';
-  if(finalizable.length){
-    finalizable.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;fsel.appendChild(o);});
-  } else {
-    const o=document.createElement('option');o.value='';o.textContent='No past years available';fsel.appendChild(o);
-  }
+  if(finalizable.length){finalizable.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;fsel.appendChild(o);});}
+  else{const o=document.createElement('option');o.value='';o.textContent='No past years available';fsel.appendChild(o);}
 
   openModal('modal-settings');
 }
 
 function exportYearData(){
-  const y=parseInt(document.getElementById('export-year-select').value);
-  if(!y){showToast('⚠️ Select a year');return;}
-
+  const y=parseInt(document.getElementById('export-year-select').value);if(!y){showToast('⚠️ Select a year');return;}
   let exportData;
-  if(importedYearsData[y]){
-    exportData=importedYearsData[y];
-  } else {
-    // Build year-specific snapshot
-    exportData={
-      year:y,
-      exportedAt:new Date().toISOString(),
-      transactions:state.transactions.filter(t=>(t.year||new Date(t.date).getFullYear())===y),
-      goals:state.goals,debts:state.debts,
-      budgets:state.budgets,netWorth:state.netWorth,nwItems:state.nwItems,
-      nwHistory:state.nwHistory,noSpend:state.noSpend,
-      finalized:isYearFinalized(y)
-    };
-  }
+  if(importedYearsData[y]){exportData=importedYearsData[y];}
+  else{exportData={year:y,exportedAt:new Date().toISOString(),transactions:state.transactions.filter(t=>(t.year||new Date(t.date).getFullYear())===y),goals:state.goals,debts:state.debts,budgets:state.budgets,netWorth:state.netWorth,nwItems:state.nwItems,nwHistory:state.nwHistory,noSpend:state.noSpend,finalized:isYearFinalized(y)};}
   const blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download=`fintrack-${y}.json`;a.click();URL.revokeObjectURL(url);
@@ -1002,35 +933,69 @@ function importYearData(input){
       const data=JSON.parse(e.target.result);
       const y=data.year||parseInt(Object.keys(data).find(k=>k==='year')||0);
       if(!y||isNaN(y)){showToast('⚠️ Invalid file: missing year field');return;}
-      importedYearsData[y]=data;
-      buildYearPills();
-      openSettingsModal(); // refresh stats
-      showToast(`📥 ${y} data imported (session only)!`);
-    } catch(err){
-      showToast('⚠️ Failed to parse file. Is it a valid JSON export?');
-    }
+      importedYearsData[y]=data;buildYearPills();openSettingsModal();showToast(`📥 ${y} data imported (session only)!`);
+    }catch(err){showToast('⚠️ Failed to parse file. Is it a valid JSON export?');}
   };
-  reader.readAsText(file);
-  input.value=''; // reset so same file can be re-selected
+  reader.readAsText(file);input.value='';
 }
 
+// ── CLEAR YEAR DATA — comprehensive ──
 function clearYearData(){
   const y=parseInt(document.getElementById('clear-year-select').value);
   if(!y){showToast('⚠️ Select a year');return;}
   if(isYearFinalized(y)){showToast('🔒 Cannot clear a finalized year');return;}
-  if(importedYearsData[y]){
+
+  // Imported session data
+  if(importedYearsData[y]&&!getPersistedYears().includes(y)){
     confirmAction(`Remove imported ${y} data from this session?`,()=>{
-      delete importedYearsData[y];
-      buildYearPills();openSettingsModal();
+      delete importedYearsData[y];buildYearPills();openSettingsModal();
       if(selectedYear===y){selectedYear=CURRENT_YEAR;renderAll();}
       showToast(`🗑️ Imported ${y} data removed from session`);
     });
     return;
   }
-  confirmAction(`Clear ALL transactions for ${y}? This cannot be undone.`,()=>{
-    state.transactions=state.transactions.filter(t=>(t.year||new Date(t.date).getFullYear())!==y);
-    saveData();openSettingsModal();renderDashboard();showToast(`🗑️ ${y} data cleared`);
-  },'btn-danger');
+
+  confirmAction(
+    `Clear ALL data for ${y}?\n\nThis will permanently erase:\n• All transactions for ${y}\n• All budget amounts (every month)\n• All savings goals\n• All debts\n• All assets & liabilities\n• All no-spend day records\n• Net worth history\n\nThis cannot be undone.`,
+    ()=>{
+      // 1. Transactions for this year
+      state.transactions=state.transactions.filter(t=>(t.year||new Date(t.date).getFullYear())!==y);
+
+      // 2. Budgets — reset every month to zero
+      MONTHS.forEach(m=>{
+        if(state.budgets[m]){
+          CATEGORIES.forEach(cat=>{state.budgets[m][cat]=0;});
+        }
+      });
+
+      // 3. Savings goals — clear all
+      state.goals=[];
+
+      // 4. Debts — clear all
+      state.debts=[];
+
+      // 5. Assets & liabilities — clear all values to 0 (keep structure) AND wipe nwItems
+      if(state.netWorth&&state.netWorth.assets){Object.keys(state.netWorth.assets).forEach(k=>{state.netWorth.assets[k]=0;});}
+      if(state.netWorth&&state.netWorth.liabilities){Object.keys(state.netWorth.liabilities).forEach(k=>{state.netWorth.liabilities[k]=0;});}
+      if(state.nwItems&&state.nwItems.assets){Object.keys(state.nwItems.assets).forEach(k=>{state.nwItems.assets[k]=0;});}
+      if(state.nwItems&&state.nwItems.liabilities){Object.keys(state.nwItems.liabilities).forEach(k=>{state.nwItems.liabilities[k]=0;});}
+
+      // 6. No-spend days — clear all
+      state.noSpend={};
+
+      // 7. Net worth history — clear all months
+      MONTHS.forEach(m=>{state.nwHistory[m]={assets:0,liabilities:0};});
+
+      // 8. If also an imported year, drop session copy
+      if(importedYearsData[y])delete importedYearsData[y];
+
+      saveData();buildYearPills();openSettingsModal();
+      if(selectedYear===y)renderAll();
+      buildNWPanels();
+      showToast(`🗑️ All data for ${y} cleared`);
+    },
+    'btn-danger'
+  );
 }
 
 function finalizeYear(){
@@ -1040,17 +1005,14 @@ function finalizeYear(){
   if(isYearFinalized(y)){showToast(`🔒 ${y} is already finalized`);return;}
   confirmAction(`Permanently finalize ${y}? This is IRREVERSIBLE. All data for this year will be locked forever.`,()=>{
     if(!state.finalizedYears)state.finalizedYears=[];
-    state.finalizedYears.push(y);
-    saveData();buildYearPills();openSettingsModal();
-    showToast(`🔒 ${y} finalized permanently!`);
+    state.finalizedYears.push(y);saveData();buildYearPills();openSettingsModal();showToast(`🔒 ${y} finalized permanently!`);
   },'btn-purple');
 }
 
 function confirmAction(msg,callback,btnClass='btn-danger'){
   document.getElementById('confirm-msg').textContent=msg;
   const btn=document.getElementById('confirm-ok-btn');
-  btn.className='btn '+btnClass;
-  btn.onclick=()=>{closeModal('modal-confirm');callback();};
+  btn.className='btn '+btnClass;btn.onclick=()=>{closeModal('modal-confirm');callback();};
   openModal('modal-confirm');
 }
 
@@ -1089,8 +1051,7 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function statusEmoji(p){if(p>=1)return'✅ Complete';if(p>=0.75)return'🟡 Almost';if(p>=0.5)return'🔵 Halfway';return'🔴 Starting';}
 
 function readonlyNote(section){
-  const finalized=isYearFinalized(selectedYear);
-  const imported=isYearImported(selectedYear);
+  const finalized=isYearFinalized(selectedYear);const imported=isYearImported(selectedYear);
   if(finalized)return`<div class="section-readonly-note">🔒 ${selectedYear} is finalized — this section is read-only.</div>`;
   if(imported)return`<div class="section-readonly-note">📥 Viewing imported data for ${selectedYear} — read-only (session only).</div>`;
   return'';
@@ -1101,11 +1062,9 @@ function isReadonly(){return isYearFinalized(selectedYear)||isYearImported(selec
 // DASHBOARD
 // ═══════════════════════════════════════════════
 function renderDashboard(){
-  const y=selectedYear;
-  const inc=totalIncome(y),exp=totalExpenses(y),net=inc-exp;
+  const y=selectedYear;const inc=totalIncome(y),exp=totalExpenses(y),net=inc-exp;
   const save=totalSaved(),debt=totalDebt(),nw=totalAssets()-totalLiabs();
-  const sub=document.getElementById('dash-subtitle');
-  if(sub)sub.textContent='Your financial overview for '+y;
+  const sub=document.getElementById('dash-subtitle');if(sub)sub.textContent='Your financial overview for '+y;
   const kpis=[
     {cls:'income',label:y+' Income',val:peso(inc),sub:txForYear(y).filter(t=>t.type==='Income').length+' income txns',icon:'💵'},
     {cls:'expense',label:y+' Expenses',val:peso(exp),sub:txForYear(y).filter(t=>t.type==='Expense').length+' expense txns',icon:'💸'},
@@ -1123,15 +1082,13 @@ function renderDashboard(){
 }
 
 function renderBarChart(){
-  const y=selectedYear;
-  const maxVal=Math.max(...MONTHS.map(m=>Math.max(monthlyIncome(m,y),monthlyExpense(m,y))))||1;
+  const y=selectedYear;const maxVal=Math.max(...MONTHS.map(m=>Math.max(monthlyIncome(m,y),monthlyExpense(m,y))))||1;
   const wrap=document.getElementById('main-bar-chart');
   wrap.innerHTML=MONTHS.map(m=>{const i=monthlyIncome(m,y),e=monthlyExpense(m,y);const ih=Math.round((i/maxVal)*110),eh=Math.round((e/maxVal)*110);return`<div class="bar-wrap"><div style="display:flex;gap:2px;align-items:flex-end;height:110px;"><div class="bar income-bar" style="height:${ih}px;" title="${m} Income: ${peso(i)}"></div><div class="bar expense-bar" style="height:${eh}px;" title="${m} Exp: ${peso(e)}"></div></div><span class="bar-label">${m}</span></div>`;}).join('');
 }
 
 function renderBudgetSnapshot(){
-  const el=document.getElementById('budget-snapshot');
-  const m=MONTHS[new Date().getMonth()];const y=selectedYear;
+  const el=document.getElementById('budget-snapshot');const m=MONTHS[new Date().getMonth()];const y=selectedYear;
   el.innerHTML=CATEGORIES.slice(0,6).map(cat=>{const bud=(state.budgets[m]||{})[cat]||0;const act=catExpense(m,cat,y);const p=bud>0?Math.min(act/bud,1):0;const over=act>bud&&bud>0;const fill=over?'linear-gradient(90deg,var(--red),#ef5350)':'linear-gradient(90deg,var(--teal),var(--teal-light))';return`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--mid-grey);">${cat}</span><span class="mono ${over?'negative':''}" style="font-size:11px;">${peso(act)} / ${peso(bud)}</span></div><div class="progress-wrap" style="height:6px;"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:${fill};"></div></div></div>`;}).join('');
 }
 
@@ -1139,53 +1096,35 @@ function renderBudgetSnapshot(){
 // TRANSACTIONS
 // ═══════════════════════════════════════════════
 function openAddTxModal(){
-  // Always reset form for new transaction
   document.getElementById('tx-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('tx-type').value='Income';
-  document.getElementById('tx-desc').value='';
-  document.getElementById('tx-amount').value='';
-  document.getElementById('tx-category').value='Income';
-  document.getElementById('tx-account').value='Cash';
-  document.getElementById('tx-notes').value='';
+  document.getElementById('tx-type').value='Income';document.getElementById('tx-desc').value='';
+  document.getElementById('tx-amount').value='';document.getElementById('tx-category').value='Income';
+  document.getElementById('tx-account').value='Cash';document.getElementById('tx-notes').value='';
   openModal('modal-tx');
 }
-
 function addTransaction(){
   if(isReadonly()){showToast('🔒 This year is read-only');return;}
-  const date=document.getElementById('tx-date').value;
-  const type=document.getElementById('tx-type').value;
-  const desc=document.getElementById('tx-desc').value.trim();
-  const amt=parseFloat(document.getElementById('tx-amount').value);
-  const cat=document.getElementById('tx-category').value;
-  const acc=document.getElementById('tx-account').value;
+  const date=document.getElementById('tx-date').value;const type=document.getElementById('tx-type').value;
+  const desc=document.getElementById('tx-desc').value.trim();const amt=parseFloat(document.getElementById('tx-amount').value);
+  const cat=document.getElementById('tx-category').value;const acc=document.getElementById('tx-account').value;
   const notes=document.getElementById('tx-notes').value.trim();
   if(!date||!desc||!amt||amt<=0){showToast('⚠️ Please fill all required fields');return;}
   const d=new Date(date);const m=MONTHS[d.getMonth()];const y=d.getFullYear();
   if(!state.accountCreatedYear||y<state.accountCreatedYear){state.accountCreatedYear=y;}
   state.transactions.push({id:uid(),date,month:m,year:y,desc,type,category:cat,account:acc,amount:amt,notes});
   state.transactions.sort((a,b)=>b.date.localeCompare(a.date));
-  saveData();closeModal('modal-tx');showToast('✅ Transaction added!');
-  buildYearPills();renderTransactions();renderDashboard();
+  saveData();closeModal('modal-tx');showToast('✅ Transaction added!');buildYearPills();renderTransactions();renderDashboard();
 }
-
 function deleteTransaction(id){
   if(isReadonly()){showToast('🔒 This year is read-only');return;}
-  state.transactions=state.transactions.filter(t=>t.id!==id);
-  saveData();renderTransactions();renderDashboard();showToast('🗑️ Transaction deleted');
+  state.transactions=state.transactions.filter(t=>t.id!==id);saveData();renderTransactions();renderDashboard();showToast('🗑️ Transaction deleted');
 }
-
 function renderTransactions(){
-  const y=selectedYear;
-  const ro=isReadonly();
-  document.getElementById('tx-year-label').textContent=y;
-  document.getElementById('add-tx-btn').style.display=ro?'none':'';
+  const y=selectedYear;const ro=isReadonly();
+  document.getElementById('tx-year-label').textContent=y;document.getElementById('add-tx-btn').style.display=ro?'none':'';
   const note=document.getElementById('tx-readonly-note');if(note)note.innerHTML=readonlyNote('transactions');
-
-  const typeF=document.getElementById('filter-type')?.value||'';
-  const monthF=document.getElementById('filter-month')?.value||'';
-  let txs=[...txForYear(y)];
-  if(typeF)txs=txs.filter(t=>t.type===typeF);
-  if(monthF)txs=txs.filter(t=>getMonth(t)===monthF);
+  const typeF=document.getElementById('filter-type')?.value||'';const monthF=document.getElementById('filter-month')?.value||'';
+  let txs=[...txForYear(y)];if(typeF)txs=txs.filter(t=>t.type===typeF);if(monthF)txs=txs.filter(t=>getMonth(t)===monthF);
   const body=document.getElementById('tx-table-body');
   if(!txs.length){body.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><p>No transactions for ${y} yet.</p></div></td></tr>`;return;}
   body.innerHTML=txs.map(t=>`<tr><td class="mono muted">${t.date}</td><td><b>${t.desc}</b>${t.notes?`<br><span style="font-size:11px;color:var(--dark-grey);">${t.notes}</span>`:''}</td><td><span class="badge-type ${t.type==='Income'?'badge-income':'badge-expense'}">${t.type}</span></td><td class="muted">${t.category}</td><td class="muted">${t.account}</td><td class="mono ${t.type==='Income'?'positive':'negative'}" style="text-align:right;">${peso(t.amount)}</td><td>${ro?'':` <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteTransaction('${t.id}')">✕</button>`}</td></tr>`).join('');
@@ -1199,34 +1138,22 @@ function buildBudgetMonthTabs(){
   wrap.innerHTML=MONTHS.map(m=>`<div class="month-tab ${m===activeBudgetMonth?'active':''}" onclick="selectBudgetMonth('${m}',this)">${m}</div>`).join('');
 }
 function selectBudgetMonth(m,el){
-  activeBudgetMonth=m;
-  document.querySelectorAll('.month-tab').forEach(t=>t.classList.remove('active'));
-  if(el)el.classList.add('active');
-  document.getElementById('budget-month-label').textContent=m;
-  renderBudget();
+  activeBudgetMonth=m;document.querySelectorAll('.month-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');document.getElementById('budget-month-label').textContent=m;renderBudget();
 }
 function renderBudget(){
-  const ro=isReadonly();
-  const y=selectedYear;
+  const ro=isReadonly();const y=selectedYear;
   document.getElementById('budget-year-label').textContent=y;
   const note=document.getElementById('budget-readonly-note');if(note)note.innerHTML=readonlyNote('budget');
-  const m=activeBudgetMonth;
-  if(!state.budgets[m])state.budgets[m]={};
+  const m=activeBudgetMonth;if(!state.budgets[m])state.budgets[m]={};
   const body=document.getElementById('budget-table-body');
   body.innerHTML=CATEGORIES.map(cat=>{
     const bud=state.budgets[m][cat]||0;const act=catExpense(m,cat,y);const diff=bud-act;const p=bud>0?Math.min(act/bud,1):0;const over=act>bud&&bud>0;const dc=diff>=0?'positive':'negative';const st=over?'⚠️ Over':(bud>0?'✅ OK':'—');
-    const budgetInput=ro
-      ?`<span class="mono" style="display:block;text-align:right;padding:5px;">${peso(bud)}</span>`
-      :`<input type="number" value="${bud}" min="0" step="100" onchange="updateBudget('${m}','${cat}',this.value)" style="background:rgba(21,101,192,0.1);border:1px solid rgba(21,101,192,0.3);color:#90caf9;border-radius:6px;padding:5px 8px;width:110px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;outline:none;">`;
+    const budgetInput=ro?`<span class="mono" style="display:block;text-align:right;padding:5px;">${peso(bud)}</span>`:`<input type="number" value="${bud}" min="0" step="100" onchange="updateBudget('${m}','${cat}',this.value)" style="background:rgba(21,101,192,0.1);border:1px solid rgba(21,101,192,0.3);color:#90caf9;border-radius:6px;padding:5px 8px;width:110px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;outline:none;">`;
     return`<tr><td><b>${cat}</b></td><td style="text-align:right;">${budgetInput}</td><td class="mono" style="text-align:right;">${peso(act)}</td><td class="mono ${dc}" style="text-align:right;">${peso(diff)}</td><td style="min-width:120px;"><div class="progress-wrap"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:${over?'linear-gradient(90deg,var(--red),#ef5350)':'linear-gradient(90deg,var(--teal),var(--teal-light))'};"></div></div></td><td style="text-align:center;">${st}</td></tr>`;
   }).join('');
 }
-function updateBudget(month,cat,val){
-  if(isReadonly())return;
-  if(!state.budgets[month])state.budgets[month]={};
-  state.budgets[month][cat]=parseFloat(val)||0;
-  saveData();showToast('💾 Budget updated');
-}
+function updateBudget(month,cat,val){if(isReadonly())return;if(!state.budgets[month])state.budgets[month]={};state.budgets[month][cat]=parseFloat(val)||0;saveData();showToast('💾 Budget updated');}
 
 // ═══════════════════════════════════════════════
 // SAVINGS
@@ -1241,8 +1168,7 @@ function addGoal(){
 function deleteGoal(id){if(isReadonly()){showToast('🔒 Read-only');return;}state.goals=state.goals.filter(g=>g.id!==id);saveData();renderSavings();showToast('🗑️ Goal removed');}
 function updateGoalSaved(id,val){if(isReadonly())return;const g=state.goals.find(g=>g.id===id);if(g){g.saved=parseFloat(val)||0;saveData();renderSavings();}}
 function renderSavings(){
-  const ro=isReadonly();
-  const note=document.getElementById('savings-readonly-note');if(note)note.innerHTML=readonlyNote('savings');
+  const ro=isReadonly();const note=document.getElementById('savings-readonly-note');if(note)note.innerHTML=readonlyNote('savings');
   document.getElementById('add-goal-btn').style.display=ro?'none':'';
   const saved=totalSaved();const goalsM=state.goals.filter(g=>g.saved>=g.target).length;
   document.getElementById('savings-kpis').innerHTML=`<div class="kpi-card savings"><div class="kpi-icon">💰</div><div class="kpi-label">Total Saved</div><div class="kpi-value positive">${peso(saved)}</div></div><div class="kpi-card income"><div class="kpi-icon">🎯</div><div class="kpi-label">Goals Met</div><div class="kpi-value">${goalsM} / ${state.goals.length}</div></div><div class="kpi-card net"><div class="kpi-icon">📋</div><div class="kpi-label">Active Goals</div><div class="kpi-value">${state.goals.length}</div></div>`;
@@ -1269,8 +1195,7 @@ function deleteDebt(id){if(isReadonly()){showToast('🔒 Read-only');return;}sta
 function updateDebtBalance(id,val){if(isReadonly())return;const d=state.debts.find(d=>d.id===id);if(d){d.balance=parseFloat(val)||0;saveData();renderDebt();}}
 function debtStatus(d){const p=d.original>0?d.balance/d.original:0;if(d.balance<=0)return'✅ Paid Off';if(p<=0.25)return'🟢 Almost Done';if(p<=0.5)return'🔵 Halfway';return'🔴 In Progress';}
 function renderDebt(){
-  const ro=isReadonly();
-  const note=document.getElementById('debt-readonly-note');if(note)note.innerHTML=readonlyNote('debt');
+  const ro=isReadonly();const note=document.getElementById('debt-readonly-note');if(note)note.innerHTML=readonlyNote('debt');
   document.getElementById('add-debt-btn').style.display=ro?'none':'';
   const total=totalDebt();const cleared=state.debts.filter(d=>d.balance<=0).length;
   document.getElementById('debt-kpis').innerHTML=`<div class="kpi-card debt"><div class="kpi-icon">💳</div><div class="kpi-label">Total Debt</div><div class="kpi-value negative">${peso(total)}</div></div><div class="kpi-card income"><div class="kpi-icon">✅</div><div class="kpi-label">Debts Cleared</div><div class="kpi-value">${cleared}</div></div><div class="kpi-card expense"><div class="kpi-icon">📋</div><div class="kpi-label">Active Debts</div><div class="kpi-value">${state.debts.length-cleared}</div></div>`;
@@ -1286,132 +1211,68 @@ function renderDebt(){
 // ═══════════════════════════════════════════════
 // NET WORTH — Dynamic Items
 // ═══════════════════════════════════════════════
-function buildNWPanels(){
-  renderNWItemPanels();
-}
+function buildNWPanels(){renderNWItemPanels();}
 
 function renderNWItemPanels(){
   if(!state.nwItems)state.nwItems={assets:{...state.netWorth.assets},liabilities:{...state.netWorth.liabilities}};
-  const ap=document.getElementById('assets-panel');
-  const lp=document.getElementById('liabilities-panel');
-  if(!ap||!lp)return;
-
-  const assetItems=state.nwItems.assets||{};
-  const liabItems=state.nwItems.liabilities||{};
-
+  const ap=document.getElementById('assets-panel');const lp=document.getElementById('liabilities-panel');if(!ap||!lp)return;
+  const assetItems=state.nwItems.assets||{};const liabItems=state.nwItems.liabilities||{};
   ap.innerHTML=renderNWItemList('assets',assetItems)+`<div class="nw-total"><span>Total Assets</span><span class="positive" id="nw-total-assets">${peso(Object.values(assetItems).reduce((s,v)=>s+Number(v),0))}</span></div>`;
   lp.innerHTML=renderNWItemList('liabilities',liabItems)+`<div class="nw-total"><span>Total Liabilities</span><span class="negative" id="nw-total-liabs">${peso(Object.values(liabItems).reduce((s,v)=>s+Number(v),0))}</span></div>`;
 }
 
-function renderNWItemList(side,items){
-  return Object.entries(items).map(([k,v])=>`
-    <div class="nw-row">
-      <span class="nw-row-label">${k}</span>
-      <span class="nw-row-value">${peso(v)}</span>
-    </div>`).join('');
-}
+function renderNWItemList(side,items){return Object.entries(items).map(([k,v])=>`<div class="nw-row"><span class="nw-row-label">${k}</span><span class="nw-row-value">${peso(v)}</span></div>`).join('');}
 
 function openEditNWModal(side){
-  editNWSide=side;
-  const title=side==='assets'?'± Edit Assets':'± Edit Liabilities';
-  document.getElementById('edit-nw-title').textContent=title;
-  renderEditNWBody();
-  openModal('modal-edit-nw');
+  editNWSide=side;document.getElementById('edit-nw-title').textContent=side==='assets'?'± Edit Assets':'± Edit Liabilities';
+  renderEditNWBody();openModal('modal-edit-nw');
 }
 
 function renderEditNWBody(){
-  const items=state.nwItems[editNWSide]||{};
-  const color=editNWSide==='assets'?'var(--teal-light)':'#ef9a9a';
+  const items=state.nwItems[editNWSide]||{};const color=editNWSide==='assets'?'var(--teal-light)':'#ef9a9a';
   const body=document.getElementById('edit-nw-body');
-  if(!Object.keys(items).length){
-    body.innerHTML=`<div class="empty-state"><div class="empty-icon">${editNWSide==='assets'?'💚':'❤️'}</div><p>No items yet. Click "+ Add Item" to begin.</p></div>`;
-    return;
-  }
-  body.innerHTML=Object.entries(items).map(([k,v])=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(176,190,197,0.07);">
-      <input class="nw-row-edit-label" type="text" value="${k}" data-key="${k}" onchange="renameNWItem('${editNWSide}','${k}',this.value)" style="flex:1;">
-      <input class="nw-row-edit-input" type="number" value="${v}" min="0" onchange="updateNWItemValue('${editNWSide}','${k}',this.value)" style="color:${color};">
-      <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteNWItem('${editNWSide}','${k}')">✕</button>
-    </div>`).join('');
+  if(!Object.keys(items).length){body.innerHTML=`<div class="empty-state"><div class="empty-icon">${editNWSide==='assets'?'💚':'❤️'}</div><p>No items yet. Click "+ Add Item" to begin.</p></div>`;return;}
+  body.innerHTML=Object.entries(items).map(([k,v])=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(176,190,197,0.07);"><input class="nw-row-edit-label" type="text" value="${k}" data-key="${k}" onchange="renameNWItem('${editNWSide}','${k}',this.value)" style="flex:1;"><input class="nw-row-edit-input" type="number" value="${v}" min="0" onchange="updateNWItemValue('${editNWSide}','${k}',this.value)" style="color:${color};"><button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteNWItem('${editNWSide}','${k}')">✕</button></div>`).join('');
 }
 
 function addNWItem(){
   if(!state.nwItems[editNWSide])state.nwItems[editNWSide]={};
   const key='New Item '+(Object.keys(state.nwItems[editNWSide]).length+1);
-  state.nwItems[editNWSide][key]=0;
-  saveData();renderEditNWBody();renderNWKpis(totalAssets(),totalLiabs(),totalAssets()-totalLiabs());
-  syncNWItemsToNetWorth();renderNWItemPanels();
+  state.nwItems[editNWSide][key]=0;saveData();renderEditNWBody();renderNWKpis(totalAssets(),totalLiabs(),totalAssets()-totalLiabs());syncNWItemsToNetWorth();renderNWItemPanels();
 }
 
 function deleteNWItem(side,key){
   if(isReadonly()){showToast('🔒 Read-only');return;}
-  delete state.nwItems[side][key];
-  saveData();renderEditNWBody();syncNWItemsToNetWorth();renderNWItemPanels();renderNWKpis(totalAssets(),totalLiabs(),totalAssets()-totalLiabs());
-  showToast('🗑️ Item removed');
+  delete state.nwItems[side][key];saveData();renderEditNWBody();syncNWItemsToNetWorth();renderNWItemPanels();renderNWKpis(totalAssets(),totalLiabs(),totalAssets()-totalLiabs());showToast('🗑️ Item removed');
 }
 
 function renameNWItem(side,oldKey,newKey){
   if(!newKey.trim()||newKey===oldKey)return;
   if(state.nwItems[side][newKey]!==undefined){showToast('⚠️ Name already exists');return;}
-  const val=state.nwItems[side][oldKey];
-  // Preserve order
-  const newItems={};
-  Object.entries(state.nwItems[side]).forEach(([k,v])=>{newItems[k===oldKey?newKey:k]=v;});
-  state.nwItems[side]=newItems;
-  saveData();syncNWItemsToNetWorth();renderNWItemPanels();
+  const newItems={};Object.entries(state.nwItems[side]).forEach(([k,v])=>{newItems[k===oldKey?newKey:k]=v;});
+  state.nwItems[side]=newItems;saveData();syncNWItemsToNetWorth();renderNWItemPanels();
 }
 
 function updateNWItemValue(side,key,val){
-  state.nwItems[side][key]=parseFloat(val)||0;
-  syncNWItemsToNetWorth();saveData();
-  renderNWKpis(totalAssets(),totalLiabs(),totalAssets()-totalLiabs());
-  renderNWItemPanels();
+  state.nwItems[side][key]=parseFloat(val)||0;syncNWItemsToNetWorth();saveData();renderNWKpis(totalAssets(),totalLiabs(),totalAssets()-totalLiabs());renderNWItemPanels();
 }
 
-function syncNWItemsToNetWorth(){
-  state.netWorth.assets={...state.nwItems.assets};
-  state.netWorth.liabilities={...state.nwItems.liabilities};
-}
-
-function updateNWTotals(){
-  const a=totalAssets(),l=totalLiabs(),nw=a-l;
-  const e1=document.getElementById('nw-total-assets');const e2=document.getElementById('nw-total-liabs');
-  if(e1)e1.textContent=peso(a);if(e2)e2.textContent=peso(l);
-  renderNWKpis(a,l,nw);
-}
+function syncNWItemsToNetWorth(){state.netWorth.assets={...state.nwItems.assets};state.netWorth.liabilities={...state.nwItems.liabilities};}
 
 function saveNetWorth(){
   if(isReadonly()){showToast('🔒 Read-only');return;}
-  syncNWItemsToNetWorth();
-  // Save current totals to this month's history
-  const m=MONTHS[new Date().getMonth()];
-  const a=totalAssets(),l=totalLiabs();
-  state.nwHistory[m]={assets:a,liabilities:l};
-  saveData();showToast('💾 Net worth saved!');renderNWHistory();
+  syncNWItemsToNetWorth();const m=MONTHS[new Date().getMonth()];const a=totalAssets(),l=totalLiabs();
+  state.nwHistory[m]={assets:a,liabilities:l};saveData();showToast('💾 Net worth saved!');renderNWHistory();
 }
 
 function refreshNWHistory(){
-  // Recalculate current month from actual NW values
-  const m=MONTHS[new Date().getMonth()];
-  const a=totalAssets(),l=totalLiabs();
-  state.nwHistory[m]={assets:a,liabilities:l};
-  saveData();renderNWHistory();showToast('🔄 Net worth history refreshed!');
+  const m=MONTHS[new Date().getMonth()];const a=totalAssets(),l=totalLiabs();
+  state.nwHistory[m]={assets:a,liabilities:l};saveData();renderNWHistory();showToast('🔄 Net worth history refreshed!');
 }
 
 function renderNetWorth(){
-  const ro=isReadonly();
-  const note=document.getElementById('nw-readonly-note');if(note)note.innerHTML=readonlyNote('networth');
-  // Sync display buttons
-  const saveBtn=document.querySelector('#view-networth .btn-primary');
-  if(saveBtn)saveBtn.style.display=ro?'none':'';
-  const assetBtn=document.querySelector('#view-networth .btn-ghost:first-of-type');
-  const liabBtn=document.querySelector('#view-networth .btn-ghost:nth-of-type(2)');
-  if(assetBtn)assetBtn.style.display=ro?'none':'';
-  if(liabBtn)liabBtn.style.display=ro?'none':'';
-
-  renderNWItemPanels();
-  const a=totalAssets(),l=totalLiabs(),nw=a-l;
-  renderNWKpis(a,l,nw);renderNWHistory();
+  const ro=isReadonly();const note=document.getElementById('nw-readonly-note');if(note)note.innerHTML=readonlyNote('networth');
+  renderNWItemPanels();const a=totalAssets(),l=totalLiabs(),nw=a-l;renderNWKpis(a,l,nw);renderNWHistory();
 }
 
 function renderNWKpis(a,l,nw){
@@ -1420,12 +1281,8 @@ function renderNWKpis(a,l,nw){
 }
 
 function renderNWHistory(){
-  const body=document.getElementById('nw-history-body');if(!body)return;
-  let prev=null;
-  body.innerHTML=MONTHS.map(m=>{
-    const h=state.nwHistory[m]||{assets:0,liabilities:0};const nw=h.assets-h.liabilities;const ch=prev!==null?nw-prev:nw;const cls=ch>=0?'positive':'negative';prev=nw;
-    return`<tr><td><b>${m}</b></td><td class="mono positive" style="text-align:right;">${peso(h.assets)}</td><td class="mono negative" style="text-align:right;">${peso(h.liabilities)}</td><td class="mono" style="text-align:right;">${peso(nw)}</td><td class="mono ${cls}" style="text-align:right;">${peso(ch)}</td></tr>`;
-  }).join('');
+  const body=document.getElementById('nw-history-body');if(!body)return;let prev=null;
+  body.innerHTML=MONTHS.map(m=>{const h=state.nwHistory[m]||{assets:0,liabilities:0};const nw=h.assets-h.liabilities;const ch=prev!==null?nw-prev:nw;const cls=ch>=0?'positive':'negative';prev=nw;return`<tr><td><b>${m}</b></td><td class="mono positive" style="text-align:right;">${peso(h.assets)}</td><td class="mono negative" style="text-align:right;">${peso(h.liabilities)}</td><td class="mono" style="text-align:right;">${peso(nw)}</td><td class="mono ${cls}" style="text-align:right;">${peso(ch)}</td></tr>`;}).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -1433,17 +1290,11 @@ function renderNWHistory(){
 // ═══════════════════════════════════════════════
 function toggleNoSpend(key){
   if(isReadonly()){showToast('🔒 Read-only');return;}
-  const cur=state.noSpend[key];
-  if(!cur)state.noSpend[key]='nospend';
-  else if(cur==='nospend')state.noSpend[key]='spending';
-  else delete state.noSpend[key];
+  const cur=state.noSpend[key];if(!cur)state.noSpend[key]='nospend';else if(cur==='nospend')state.noSpend[key]='spending';else delete state.noSpend[key];
   saveData();renderNoSpend();
 }
-
 function renderNoSpend(){
-  const nc=Object.values(state.noSpend).filter(v=>v==='nospend').length;
-  const sc=Object.values(state.noSpend).filter(v=>v==='spending').length;
-  const tot=nc+sc;const rate=tot>0?nc/tot:0;
+  const nc=Object.values(state.noSpend).filter(v=>v==='nospend').length;const sc=Object.values(state.noSpend).filter(v=>v==='spending').length;const tot=nc+sc;const rate=tot>0?nc/tot:0;
   document.getElementById('nsd-kpis').innerHTML=`<div class="kpi-card savings"><div class="kpi-icon">🚫</div><div class="kpi-label">No-Spend Days</div><div class="kpi-value positive">${nc}</div></div><div class="kpi-card expense"><div class="kpi-icon">💸</div><div class="kpi-label">Spending Days</div><div class="kpi-value negative">${sc}</div></div><div class="kpi-card net"><div class="kpi-icon">📊</div><div class="kpi-label">No-Spend Rate</div><div class="kpi-value">${(rate*100).toFixed(1)}%</div></div><div class="kpi-card income"><div class="kpi-icon">📋</div><div class="kpi-label">Days Tracked</div><div class="kpi-value">${tot}</div></div>`;
   const today=new Date();const grid=document.getElementById('nsd-calendar-grid');
   const dh=['Mo','Tu','We','Th','Fr','Sa','Su'];const dim=[31,28,31,30,31,30,31,31,30,31,30,31];
@@ -1455,8 +1306,7 @@ function renderNoSpend(){
     for(let day=1;day<=maxDay;day++){
       const key=`${m}-${day}`;const val=state.noSpend[key];const date=new Date(y,mi,day);const future=date>today;
       let cls=future?'future':'';let label=day;
-      if(val==='nospend'){cls='no-spend';label=`${day}✅`;}
-      if(val==='spending'){cls='spending';label=`${day}💸`;}
+      if(val==='nospend'){cls='no-spend';label=`${day}✅`;}if(val==='spending'){cls='spending';label=`${day}💸`;}
       const clickable=!future&&!isReadonly();
       cells+=`<div class="cal-day ${cls}" ${clickable?`onclick="toggleNoSpend('${key}')"`:''}>${label}</div>`;
     }
@@ -1468,10 +1318,7 @@ function renderNoSpend(){
 // CHARTS
 // ═══════════════════════════════════════════════
 function renderCharts(){
-  const y=selectedYear;
-  const maxInc=Math.max(...MONTHS.map(m=>monthlyIncome(m,y)),1);
-  const maxExp=Math.max(...MONTHS.map(m=>monthlyExpense(m,y)),1);
-  const maxAll=Math.max(maxInc,maxExp);
+  const y=selectedYear;const maxInc=Math.max(...MONTHS.map(m=>monthlyIncome(m,y)),1);const maxExp=Math.max(...MONTHS.map(m=>monthlyExpense(m,y)),1);const maxAll=Math.max(maxInc,maxExp);
   const sub=document.getElementById('charts-subtitle');if(sub)sub.textContent=`Visual overview of your ${y} finances`;
   const grid=document.getElementById('charts-grid');
   const incExpBars=MONTHS.map(m=>{const i=monthlyIncome(m,y),e=monthlyExpense(m,y);const ih=Math.round((i/maxAll)*100),eh=Math.round((e/maxAll)*100);return`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;"><div style="display:flex;gap:2px;align-items:flex-end;height:100px;"><div style="width:12px;height:${ih}px;background:var(--teal);border-radius:3px 3px 0 0;" title="${m} Income: ${peso(i)}"></div><div style="width:12px;height:${eh}px;background:var(--red);border-radius:3px 3px 0 0;" title="${m} Exp: ${peso(e)}"></div></div><span style="font-size:8px;color:var(--dark-grey);font-family:'DM Mono',monospace;">${m}</span></div>`;}).join('');
