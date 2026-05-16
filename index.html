@@ -12,7 +12,7 @@ html{font-size:14px;scroll-behavior:smooth}
 body{font-family:'Outfit',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--navy-mid)}::-webkit-scrollbar-thumb{background:var(--teal);border-radius:3px}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(13,115,119,0.18) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 90%,rgba(245,166,35,0.08) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 50% 50%,rgba(20,255,236,0.04) 0%,transparent 70%);pointer-events:none;z-index:0}
-
+  
 /* LOGIN */
 #login-page{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--navy)}
 .login-card{width:100%;max-width:420px;background:linear-gradient(145deg,rgba(27,42,74,0.95),rgba(15,27,53,0.98));border:1px solid var(--border);border-radius:24px;padding:48px 40px;box-shadow:var(--shadow),0 0 60px rgba(13,115,119,0.2);position:relative;overflow:hidden;animation:fadeSlideIn 0.6s cubic-bezier(0.23,1,0.32,1) forwards}
@@ -273,6 +273,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="login-btn" onclick="doLogin()">Sign In →</button>
     <div class="login-error" id="login-error">Invalid username or password.</div>
     <div class="login-hint">Demo: <code>admin</code><code>finance2025</code></div>
+    <div style="text-align:center;margin-top:14px;">
+      <span style="color:var(--mid-grey);font-size:12px;">Don't have an account? </span>
+      <span onclick="openCreateAccount()" style="color:var(--teal-light);font-size:12px;cursor:pointer;text-decoration:underline;">Create one</span>
+    </div>
   </div>
 </div>
 
@@ -488,8 +492,41 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </main>
 </div>
 
-<!-- ===== MODALS ===== -->
-
+<!-- CREATE ACCOUNT -->
+<div class="modal-overlay" id="modal-create-account">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title">👤 Create Account</span>
+      <button class="modal-close" onclick="closeModal('modal-create-account')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="field-group" style="grid-column:span 2;">
+          <label>Username</label>
+          <input type="text" id="new-username" placeholder="Choose a username" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field-group" style="grid-column:span 2;">
+          <label>Password</label>
+          <input type="password" id="new-password" placeholder="Choose a password">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field-group" style="grid-column:span 2;">
+          <label>Confirm Password</label>
+          <input type="password" id="new-password-confirm" placeholder="Repeat password">
+        </div>
+      </div>
+      <div id="create-account-error" style="background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);color:#ff6b6b;border-radius:8px;padding:10px 14px;font-size:13px;display:none;margin-top:4px;text-align:center;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-create-account')">Cancel</button>
+      <button class="btn btn-primary" onclick="createAccount()">Create Account</button>
+    </div>
+  </div>
+</div>
+  
 <!-- ADD TRANSACTION -->
 <div class="modal-overlay" id="modal-tx">
   <div class="modal">
@@ -845,7 +882,8 @@ function doLogin(){
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value;
   const err=document.getElementById('login-error');
-  if(USERS[u]&&USERS[u]===p){err.style.display='none';currentUser=u;LS.set('session',u);loadUserData();enterApp();}
+  const accounts=getAccounts();
+  if(accounts[u]&&accounts[u]===p){err.style.display='none';currentUser=u;LS.set('session',u);loadUserData();enterApp();}
   else{err.style.display='block';document.getElementById('login-pass').value='';}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-page').style.display!=='none')doLogin();});
@@ -887,6 +925,33 @@ function inferYear(){
 }
 
 function saveData(){LS.set('data_'+currentUser,state);}
+function openCreateAccount(){
+  document.getElementById('new-username').value='';
+  document.getElementById('new-password').value='';
+  document.getElementById('new-password-confirm').value='';
+  document.getElementById('create-account-error').style.display='none';
+  openModal('modal-create-account');
+}
+
+function createAccount(){
+  const u=document.getElementById('new-username').value.trim().toLowerCase();
+  const p=document.getElementById('new-password').value;
+  const p2=document.getElementById('new-password-confirm').value;
+  const err=document.getElementById('create-account-error');
+  err.style.display='none';
+  if(!u||u.length<3){err.textContent='Username must be at least 3 characters.';err.style.display='block';return;}
+  if(/\s/.test(u)){err.textContent='Username cannot contain spaces.';err.style.display='block';return;}
+  if(!p||p.length<6){err.textContent='Password must be at least 6 characters.';err.style.display='block';return;}
+  if(p!==p2){err.textContent='Passwords do not match.';err.style.display='block';return;}
+  const accounts=LS.get('accounts')||{...USERS};
+  if(accounts[u]){err.textContent='Username already exists.';err.style.display='block';return;}
+  accounts[u]=p;
+  LS.set('accounts',accounts);
+  closeModal('modal-create-account');
+  showToast('✅ Account created! You can now sign in.');
+}
+
+function getAccounts(){return LS.get('accounts')||{...USERS};}
 
 function getStateForYear(y){if(importedYearsData[y])return importedYearsData[y];return state;}
 function txForYear(y){const s=getStateForYear(y);return(s.transactions||[]).filter(t=>(t.year||new Date(t.date).getFullYear())===y);}
@@ -1185,7 +1250,7 @@ function renderTransactions(){
   let txs=[...txForYear(y)];if(typeF)txs=txs.filter(t=>t.type===typeF);if(monthF)txs=txs.filter(t=>getMonth(t)===monthF);
   const body=document.getElementById('tx-table-body');
   if(!txs.length){body.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><p>No transactions for ${y} yet.</p></div></td></tr>`;return;}
-  body.innerHTML=txs.map(t=>`<tr><td class="mono muted">${t.date}</td><td><b>${t.desc}</b>${t.notes?`<br><span style="font-size:11px;color:var(--dark-grey);">${t.notes}</span>`:''}</td><td><span class="badge-type ${t.type==='Income'?'badge-income':'badge-expense'}">${t.type==='Income'?'Inflow':'Outflow'}">${t.type}</span></td><td class="muted">${t.category}</td><td class="muted">${t.account}</td><td class="mono ${t.type==='Income'?'positive':'negative'}" style="text-align:right;">${peso(t.amount)}</td><td>${ro?'':` <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteTransaction('${t.id}')">✕</button>`}</td></tr>`).join('');
+  body.innerHTML=txs.map(t=>`<tr><td class="mono muted">${t.date}</td><td><b>${t.desc}</b>${t.notes?`<br><span style="font-size:11px;color:var(--dark-grey);">${t.notes}</span>`:''}</td><td><span class="badge-type ${t.type==='Income'?'badge-income':'badge-expense'}">${t.type==='Income'?'Inflow':'Outflow'}</span></td><td class="muted">${t.category}</td><td class="muted">${t.account}</td><td class="mono ${t.type==='Income'?'positive':'negative'}" style="text-align:right;">${peso(t.amount)}</td><td>${ro?'':` <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteTransaction('${t.id}')">✕</button>`}</td></tr>`).join('');
 }
 
 // ═══════════════════════════════════════════════
