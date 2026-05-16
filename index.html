@@ -553,13 +553,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
       <div class="form-row">
         <div class="field-group"><label>Original Amount (₱)</label><input type="number" id="debt-original" placeholder="0.00" min="0"></div>
-        <div class="field-group"><label>Current Balance (₱)</label><input type="number" id="debt-balance" placeholder="0.00" min="0"></div>
+        <div class="field-group"><label>Interest Rate (Monthly %)</label><input type="number" id="debt-rate" placeholder="e.g. 2" min="0" step="0.1"></div>
       </div>
       <div class="form-row">
-        <div class="field-group"><label>Interest Rate (Monthly %)</label><input type="number" id="debt-rate" placeholder="e.g. 2" min="0" step="0.1"></div>
         <div class="field-group"><label>Minimum Payment (₱)</label><input type="number" id="debt-minpay" placeholder="0.00" min="0"></div>
+        <div class="field-group"><label>Extra Payment (₱)</label><input type="number" id="debt-extra" placeholder="0.00" min="0"></div>
       </div>
-      <div class="form-row"><div class="field-group"><label>Extra Payment (₱)</label><input type="number" id="debt-extra" placeholder="0.00" min="0"></div></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-debt')">Cancel</button><button class="btn btn-primary" onclick="addDebt()">Add Debt</button></div>
   </div>
@@ -1146,9 +1145,23 @@ function renderBudget(){
   const body=document.getElementById('budget-table-body');
   body.innerHTML=CATEGORIES.map(cat=>{
     const bud=state.budgets[m][cat]||0;const act=catExpense(m,cat,y);const diff=bud-act;const p=bud>0?Math.min(act/bud,1):0;const over=act>bud&&bud>0;const dc=diff>=0?'positive':'negative';const st=over?'⚠️ Over':(bud>0?'✅ OK':'—');
-    const budgetInput=ro?`<span class="mono" style="display:block;text-align:right;padding:5px;">${peso(bud)}</span>`:`<input type="number" value="${bud}" min="0" step="100" onchange="updateBudget('${m}','${cat}',this.value)" style="background:rgba(21,101,192,0.1);border:1px solid rgba(21,101,192,0.3);color:#90caf9;border-radius:6px;padding:5px 8px;width:110px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;outline:none;">`;
+    const budgetInput=ro?`<span class="mono" style="display:block;text-align:right;padding:5px;">${peso(bud)}</span>`:`<input type="number" value="${bud}" min="0" step="100" onchange="this.value=parseFloat(this.value)||0;updateBudget('${m}','${cat}',this.value)" style="background:rgba(21,101,192,0.1);border:1px solid rgba(21,101,192,0.3);color:#90caf9;border-radius:6px;padding:5px 8px;width:110px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;outline:none;">`;
     return`<tr><td><b>${cat}</b></td><td style="text-align:right;">${budgetInput}</td><td class="mono" style="text-align:right;">${peso(act)}</td><td class="mono ${dc}" style="text-align:right;">${peso(diff)}</td><td style="min-width:120px;"><div class="progress-wrap"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:${over?'linear-gradient(90deg,var(--red),#ef5350)':'linear-gradient(90deg,var(--teal),var(--teal-light))'};"></div></div></td><td style="text-align:center;">${st}</td></tr>`;
-  }).join('');
+}).join('');
+
+  const totalBudget = CATEGORIES.reduce((s, cat) => s + (state.budgets[m][cat] || 0), 0);
+  const totalActual = CATEGORIES.reduce((s, cat) => s + catExpense(m, cat, y), 0);
+  const totalDiff = totalBudget - totalActual;
+  const totalDc = totalDiff >= 0 ? 'positive' : 'negative';
+
+  body.innerHTML += `<tr style="border-top:2px solid var(--border);background:rgba(13,115,119,0.06);">
+    <td><b>TOTAL</b></td>
+    <td style="text-align:right;"><span class="mono" style="display:block;text-align:right;padding:5px;">${peso(totalBudget)}</span></td>
+    <td class="mono" style="text-align:right;">${peso(totalActual)}</td>
+    <td class="mono ${totalDc}" style="text-align:right;">${peso(totalDiff)}</td>
+    <td></td>
+    <td></td>
+  </tr>`;
 }
 function updateBudget(month,cat,val){if(isReadonly())return;if(!state.budgets[month])state.budgets[month]={};state.budgets[month][cat]=parseFloat(val)||0;saveData();renderBudget();showToast('💾 Budget updated');}
 
