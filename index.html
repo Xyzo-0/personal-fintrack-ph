@@ -553,7 +553,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
       <div class="form-row">
         <div class="field-group"><label>Original Amount (₱)</label><input type="number" id="debt-original" placeholder="0.00" min="0"></div>
-        <div class="field-group"><label>Interest Rate (Monthly %)</label><input type="number" id="debt-rate" placeholder="e.g. 2" min="0" step="0.1"></div>
+        <div class="field-group">
+          <label>Interest Rate (Monthly %)</label>
+          <input type="number" id="debt-rate" placeholder="e.g. 2" min="0" step="0.1">
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button type="button" id="btn-simple" class="btn btn-primary btn-sm" onclick="selectInterestMethod('simple')" style="flex:1;">Simple</button>
+              <button type="button" id="btn-compound" class="btn btn-ghost btn-sm" onclick="selectInterestMethod('compound')" style="flex:1;">Compound</button>
+            </div>
+          <input type="hidden" id="debt-interest-method" value="simple">
+        </div>
       </div>
       <div class="form-row">
         <div class="field-group"><label>Minimum Payment (₱)</label><input type="number" id="debt-minpay" placeholder="0.00" min="0"></div>
@@ -1161,11 +1169,11 @@ function addTransaction(){
   if(!state.accountCreatedYear||y<state.accountCreatedYear){state.accountCreatedYear=y;}
   state.transactions.push({id:uid(),date,month:m,year:y,desc,type,category:cat,account:acc,amount:amt,notes});
   state.transactions.sort((a,b)=>b.date.localeCompare(a.date));
-  saveData();closeModal('modal-tx');showToast('✅ Transaction added!');buildYearPills();renderTransactions();renderDashboard();
+  saveData();autoMarkNoSpendDays();closeModal('modal-tx');showToast('✅ Transaction added!');buildYearPills();renderTransactions();renderDashboard();
 }
 function deleteTransaction(id){
   if(isReadonly()){showToast('🔒 This year is read-only');return;}
-  state.transactions=state.transactions.filter(t=>t.id!==id);saveData();renderTransactions();renderDashboard();showToast('🗑️ Transaction deleted');
+  state.transactions=state.transactions.filter(t=>t.id!==id);saveData();autoMarkNoSpendDays();renderTransactions();renderDashboard();showToast('🗑️ Transaction deleted');
 }
 function renderTransactions(){
   const y=selectedYear;const ro=isReadonly();
@@ -1254,6 +1262,11 @@ function renderSavings(){
 // ═══════════════════════════════════════════════
 // DEBT
 // ═══════════════════════════════════════════════
+function selectInterestMethod(method){
+  document.getElementById('debt-interest-method').value=method;
+  document.getElementById('btn-simple').className='btn btn-sm '+(method==='simple'?'btn-primary':'btn-ghost');
+  document.getElementById('btn-compound').className='btn btn-sm '+(method==='compound'?'btn-primary':'btn-ghost');
+}
 function openAddDebtModal(){
   document.getElementById('debt-name').value='';
   document.getElementById('debt-creditor').value='';
@@ -1265,6 +1278,8 @@ function openAddDebtModal(){
   document.getElementById('debt-due-month').value='';
   document.getElementById('debt-due-year').value='';
   document.getElementById('debt-due-day').value='';
+  document.getElementById('debt-interest-method').value='simple';
+  selectInterestMethod('simple'); 
   openModal('modal-debt');
 }
 function addDebt(){
@@ -1279,8 +1294,9 @@ function addDebt(){
   const dueMonth=document.getElementById('debt-due-month').value;
   const dueYear=document.getElementById('debt-due-year').value;
   const dueDay=document.getElementById('debt-due-day').value;
+  const interestMethod=document.getElementById('debt-interest-method').value||'simple';
   if(!name||!original){showToast('⚠️ Fill required fields');return;}
-  state.debts.push({id:uid(),name,creditor,original,balance,rate,minPay,extra,dueMonth,dueYear,dueDay});saveData();closeModal('modal-debt');showToast('💳 Debt added!');renderDebt();
+  state.debts.push({id:uid(),name,creditor,original,balance,rate,minPay,extra,dueMonth,dueYear,dueDay,interestMethod});saveData();closeModal('modal-debt');showToast('💳 Debt added!');renderDebt();
 }
 function deleteDebt(id){if(isReadonly()){showToast('🔒 Read-only');return;}state.debts=state.debts.filter(d=>d.id!==id);saveData();renderDebt();showToast('🗑️ Debt removed');}
 function openPayDebtModal(id){
@@ -1307,6 +1323,35 @@ function submitDebtPayment(){
   state.transactions.sort((a,b)=>b.date.localeCompare(a.date));
   saveData();closeModal('modal-pay-debt');showToast('✅ Payment recorded! Balance updated.');renderDebt();renderDashboard();
 }
+function calcMonthsLeft(d){
+  const tp=(d.minPay||0)+(d.extra||0);
+  if(!tp||tp<=0)return'—';
+  const r=(d.rate||0)/100;
+  if(!r||d.interestMethod==='simple'){
+    return Math.ceil(d.balance/tp);
+  } else {
+    // Compound: standard amortization formula
+    // n = -log(1 - (r*B)/P) / log(1+r)
+    const rB=r*d.balance;
+    if(tp<=rB)return'∞'; // payment doesn't cover interest
+    const n=-Math.log(1-(rB/tp))/Math.log(1+r);
+    return Math.ceil(n);
+  }
+}
+
+function calcTotalInterest(d){
+  const tp=(d.minPay||0)+(d.extra||0);
+  if(!tp||tp<=0||!d.rate)return 0;
+  const r=(d.rate||0)/100;
+  const ml=calcMonthsLeft(d);
+  if(ml==='—'||ml==='∞')return 0;
+  if(d.interestMethod==='compound'){
+    return (tp*ml)-d.balance;
+  } else {
+    return d.balance*r*ml;
+  }
+}
+  
 function debtStatus(d){const p=d.original>0?d.balance/d.original:0;if(d.balance<=0)return'✅ Paid Off';if(p<=0.25)return'🟢 Almost Done';if(p<=0.5)return'🔵 Halfway';return'🔴 In Progress';}
 function renderDebt(){
   const ro=isReadonly();const note=document.getElementById('debt-readonly-note');if(note)note.innerHTML=readonlyNote('debt');
@@ -1316,9 +1361,17 @@ function renderDebt(){
   const list=document.getElementById('debt-list');
   if(!state.debts.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">🎉</div><p>Debt-free! Add debts to track them.</p></div>`;return;}
   list.innerHTML=state.debts.map(d=>{
-    const p=d.original>0?Math.min(1-d.balance/d.original,1):1;const tp=(d.minPay||0)+(d.extra||0);const ml=tp>0?Math.ceil(d.balance/tp):'—';const rd=d.rate?((d.rate<1?d.rate:d.rate)).toFixed(2)+'%':'—';
+    const p=d.original>0?Math.min(1-d.balance/d.original,1):1;
+    const tp=(d.minPay||0)+(d.extra||0);
+    const ml=calcMonthsLeft(d);
+    const totalInt=calcTotalInterest(d);
+    const rd=d.rate?d.rate.toFixed(2)+'%':'—';
+    const methodLabel=d.interestMethod==='compound'?'Compound':'Simple';
     const editRow=ro?'':`<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;align-items:center;justify-content:flex-end;"><button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openPayDebtModal('${d.id}')">💳 Pay Debt</button><button class="btn btn-danger" style="padding:4px 8px;font-size:11px;" onclick="deleteDebt('${d.id}')">✕</button></div>`;
-    return`<div class="debt-card"><div class="debt-header"><div><div class="debt-name">${d.name}</div><div class="debt-creditor">${d.creditor||'—'}</div></div><div style="text-align:right;"><div class="debt-balance">${peso(d.balance)}</div><div style="font-size:11px;color:var(--mid-grey);">Balance</div></div></div><div class="progress-wrap" style="margin-bottom:14px;"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:linear-gradient(90deg,#2E7D32,#66bb6a);"></div></div><div class="debt-details"><div><div class="debt-detail-label">Original</div><div class="debt-detail-value">${peso(d.original)}</div></div><div><div class="debt-detail-label">Interest/mo</div><div class="debt-detail-value">${rd}</div></div><div><div class="debt-detail-label">Min Pay</div><div class="debt-detail-value">${peso(d.minPay)}</div></div><div><div class="debt-detail-label">% Paid</div><div class="debt-detail-value" style="color:#66bb6a;">${pct(p)}</div></div><div><div class="debt-detail-label">Mo. Left</div><div class="debt-detail-value">${ml}</div></div><div><div class="debt-detail-label">Status</div><div class="debt-detail-value" style="font-size:11px;">${debtStatus(d)}</div></div></div>${(d.dueMonth||d.dueYear)?`<div style="margin-top:10px;font-size:11px;color:var(--mid-grey);">📅 Due: <span style="color:var(--gold);">${[d.dueMonth,d.dueDay?d.dueDay:'',d.dueYear].filter(Boolean).join(' ')}</span></div>`:''}${editRow}</div>`;
+    return`<div class="debt-card"><div class="debt-header"><div><div class="debt-name">${d.name}</div><div class="debt-creditor">${d.creditor||'—'}</div></div><div style="text-align:right;"><div class="debt-balance">${peso(d.balance)}</div><div style="font-size:11px;color:var(--mid-grey);">Balance</div></div></div><div class="progress-wrap" style="margin-bottom:14px;"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:linear-gradient(90deg,#2E7D32,#66bb6a);"></div></div><div class="debt-details"><div><div class="debt-detail-label">Original</div><div class="debt-detail-value">${peso(d.original)}</div></div><div><div class="debt-detail-label">Interest/mo</div><div class="debt-detail-value">${rd}</div></div><div><div class="debt-detail-label">Min Pay</div><div class="debt-detail-value">${peso(d.minPay)}</div></div><div><div class="debt-detail-label">% Paid</div><div class="debt-detail-value" style="color:#66bb6a;">${pct(p)}</div></div><div><div class="debt-detail-label">Mo. Left</div><div class="debt-detail-value">${ml}</div></div>
+          <div><div class="debt-detail-label">Est. Interest</div><div class="debt-detail-value" style="color:#ffcc80;">${totalInt>0?peso(totalInt):'—'}</div></div>
+          <div><div class="debt-detail-label">Method</div><div class="debt-detail-value" style="font-size:11px;">${methodLabel}</div></div>
+          <div><div class="debt-detail-label">Status</div><div class="debt-detail-value" style="font-size:11px;">${debtStatus(d)}</div></div></div>${(d.dueMonth||d.dueYear)?`<div style="margin-top:10px;font-size:11px;color:var(--mid-grey);">📅 Due: <span style="color:var(--gold);">${[d.dueMonth,d.dueDay?d.dueDay:'',d.dueYear].filter(Boolean).join(' ')}</span></div>`:''}${editRow}</div>`;
   }).join('');
 }
 
@@ -1402,12 +1455,64 @@ function renderNWHistory(){
 // ═══════════════════════════════════════════════
 // NO-SPEND DAYS
 // ═══════════════════════════════════════════════
+function autoMarkNoSpendDays(){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const createdYear = state.accountCreatedYear || CURRENT_YEAR;
+
+  MONTHS.forEach((m, mi) => {
+    const dim = [31,28,31,30,31,30,31,31,30,31,30,31];
+    const daysInMonth = dim[mi];
+
+    for(let day = 1; day <= daysInMonth; day++){
+      const date = new Date(selectedYear, mi, day);
+      date.setHours(0,0,0,0);
+
+      // Skip future days
+      if(date > today) continue;
+
+      // Skip days before account creation year
+      if(selectedYear < createdYear) continue;
+      if(selectedYear === createdYear){
+        // Skip days before the first transaction date in that year
+        const firstTx = state.transactions
+          .filter(t => (t.year || new Date(t.date).getFullYear()) === createdYear)
+          .map(t => new Date(t.date))
+          .sort((a,b) => a-b)[0];
+        if(firstTx){
+          const firstDate = new Date(firstTx);
+          firstDate.setHours(0,0,0,0);
+          if(date < firstDate) continue;
+        }
+      }
+
+      const key = `${m}-${day}`;
+
+      // Only auto-set if the day hasn't been manually set already
+      if(state.noSpend[key] !== undefined) continue;
+
+      // Check if any expense transactions exist on this exact date
+      const dateStr = `${selectedYear}-${String(mi+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const hasExpense = state.transactions.some(t =>
+        t.date === dateStr && t.type === 'Expense'
+      );
+
+      if(!hasExpense){
+        state.noSpend[key] = 'nospend';
+      }
+    }
+  });
+
+  saveData();
+}
+  
 function toggleNoSpend(key){
   if(isReadonly()){showToast('🔒 Read-only');return;}
   const cur=state.noSpend[key];if(!cur)state.noSpend[key]='nospend';else if(cur==='nospend')state.noSpend[key]='spending';else delete state.noSpend[key];
   saveData();renderNoSpend();
 }
 function renderNoSpend(){
+  autoMarkNoSpendDays();
   const nc=Object.values(state.noSpend).filter(v=>v==='nospend').length;const sc=Object.values(state.noSpend).filter(v=>v==='spending').length;const tot=nc+sc;const rate=tot>0?nc/tot:0;
   document.getElementById('nsd-kpis').innerHTML=`<div class="kpi-card savings"><div class="kpi-icon">🚫</div><div class="kpi-label">No-Spend Days</div><div class="kpi-value positive">${nc}</div></div><div class="kpi-card expense"><div class="kpi-icon">💸</div><div class="kpi-label">Spending Days</div><div class="kpi-value negative">${sc}</div></div><div class="kpi-card net"><div class="kpi-icon">📊</div><div class="kpi-label">No-Spend Rate</div><div class="kpi-value">${(rate*100).toFixed(1)}%</div></div><div class="kpi-card income"><div class="kpi-icon">📋</div><div class="kpi-label">Days Tracked</div><div class="kpi-value">${tot}</div></div>`;
   const today=new Date();const grid=document.getElementById('nsd-calendar-grid');
