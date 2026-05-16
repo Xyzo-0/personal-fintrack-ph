@@ -1150,7 +1150,7 @@ function renderBudget(){
     return`<tr><td><b>${cat}</b></td><td style="text-align:right;">${budgetInput}</td><td class="mono" style="text-align:right;">${peso(act)}</td><td class="mono ${dc}" style="text-align:right;">${peso(diff)}</td><td style="min-width:120px;"><div class="progress-wrap"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:${over?'linear-gradient(90deg,var(--red),#ef5350)':'linear-gradient(90deg,var(--teal),var(--teal-light))'};"></div></div></td><td style="text-align:center;">${st}</td></tr>`;
   }).join('');
 }
-function updateBudget(month,cat,val){if(isReadonly())return;if(!state.budgets[month])state.budgets[month]={};state.budgets[month][cat]=parseFloat(val)||0;saveData();showToast('💾 Budget updated');}
+function updateBudget(month,cat,val){if(isReadonly())return;if(!state.budgets[month])state.budgets[month]={};state.budgets[month][cat]=parseFloat(val)||0;saveData();renderBudget();showToast('💾 Budget updated');}
 
 // ═══════════════════════════════════════════════
 // SAVINGS
