@@ -667,6 +667,38 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
 </div>
 
+<!-- PAY DEBT -->
+<div class="modal-overlay" id="modal-pay-debt">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <span class="modal-title">💳 Pay Debt</span>
+      <button class="modal-close" onclick="closeModal('modal-pay-debt')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--mid-grey);margin-bottom:16px;">
+        Paying: <strong id="pay-debt-name" style="color:var(--white);"></strong><br>
+        <span style="font-size:12px;">Current balance: <span id="pay-debt-current" class="mono" style="color:#ef9a9a;"></span></span>
+      </div>
+      <div class="form-row">
+        <div class="field-group">
+          <label>Amount to Pay (₱)</label>
+          <input type="number" id="pay-debt-amount" placeholder="0.00" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field-group">
+          <label>Date Paid</label>
+          <input type="date" id="pay-debt-date">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-pay-debt')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitDebtPayment()">✅ Confirm Payment</button>
+    </div>
+  </div>
+</div>
+  
 <!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal" style="max-width:400px;">
@@ -1214,12 +1246,35 @@ function openAddDebtModal(){
 }
 function addDebt(){
   if(isReadonly()){showToast('🔒 Read-only');return;}
-  const name=document.getElementById('debt-name').value.trim();const creditor=document.getElementById('debt-creditor').value.trim();const original=parseFloat(document.getElementById('debt-original').value)||0;const balance=parseFloat(document.getElementById('debt-balance').value)||0;const rate=parseFloat(document.getElementById('debt-rate').value)||0;const minPay=parseFloat(document.getElementById('debt-minpay').value)||0;const extra=parseFloat(document.getElementById('debt-extra').value)||0;
+  const name=document.getElementById('debt-name').value.trim();const creditor=document.getElementById('debt-creditor').value.trim();const original=parseFloat(document.getElementById('debt-original').value)||0;const balance=parseFloat(document.getElementById('debt-original').value)||0;const rate=parseFloat(document.getElementById('debt-rate').value)||0;const minPay=parseFloat(document.getElementById('debt-minpay').value)||0;const extra=parseFloat(document.getElementById('debt-extra').value)||0;
   if(!name||!original){showToast('⚠️ Fill required fields');return;}
   state.debts.push({id:uid(),name,creditor,original,balance,rate,minPay,extra});saveData();closeModal('modal-debt');showToast('💳 Debt added!');renderDebt();
 }
 function deleteDebt(id){if(isReadonly()){showToast('🔒 Read-only');return;}state.debts=state.debts.filter(d=>d.id!==id);saveData();renderDebt();showToast('🗑️ Debt removed');}
-function updateDebtBalance(id,val){if(isReadonly())return;const d=state.debts.find(d=>d.id===id);if(d){d.balance=parseFloat(val)||0;saveData();renderDebt();}}
+function openPayDebtModal(id){
+  const d=state.debts.find(d=>d.id===id);if(!d)return;
+  document.getElementById('pay-debt-name').textContent=d.name;
+  document.getElementById('pay-debt-current').textContent=peso(d.balance);
+  document.getElementById('pay-debt-amount').value='';
+  document.getElementById('pay-debt-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('modal-pay-debt').dataset.debtId=id;
+  openModal('modal-pay-debt');
+}
+function submitDebtPayment(){
+  if(isReadonly()){showToast('🔒 Read-only');return;}
+  const id=document.getElementById('modal-pay-debt').dataset.debtId;
+  const amt=parseFloat(document.getElementById('pay-debt-amount').value)||0;
+  const date=document.getElementById('pay-debt-date').value;
+  if(!amt||amt<=0){showToast('⚠️ Enter a valid amount');return;}
+  if(!date){showToast('⚠️ Select a payment date');return;}
+  const d=state.debts.find(d=>d.id===id);if(!d)return;
+  d.balance=Math.max(0,d.balance-amt);
+  // Log as a transaction
+  const m=MONTHS[new Date(date).getMonth()];const y=new Date(date).getFullYear();
+  state.transactions.push({id:uid(),date,month:m,year:y,desc:'Debt Payment — '+d.name,type:'Expense',category:'Debt Payment',account:'Bank',amount:amt,notes:'Paid on '+date});
+  state.transactions.sort((a,b)=>b.date.localeCompare(a.date));
+  saveData();closeModal('modal-pay-debt');showToast('✅ Payment recorded! Balance updated.');renderDebt();renderDashboard();
+}
 function debtStatus(d){const p=d.original>0?d.balance/d.original:0;if(d.balance<=0)return'✅ Paid Off';if(p<=0.25)return'🟢 Almost Done';if(p<=0.5)return'🔵 Halfway';return'🔴 In Progress';}
 function renderDebt(){
   const ro=isReadonly();const note=document.getElementById('debt-readonly-note');if(note)note.innerHTML=readonlyNote('debt');
@@ -1230,7 +1285,7 @@ function renderDebt(){
   if(!state.debts.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">🎉</div><p>Debt-free! Add debts to track them.</p></div>`;return;}
   list.innerHTML=state.debts.map(d=>{
     const p=d.original>0?Math.min(1-d.balance/d.original,1):1;const tp=(d.minPay||0)+(d.extra||0);const ml=tp>0?Math.ceil(d.balance/tp):'—';const rd=d.rate?((d.rate<1?d.rate:d.rate)).toFixed(2)+'%':'—';
-    const editRow=ro?'':`<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;align-items:center;"><span style="font-size:11px;color:var(--mid-grey);flex:1;">Update balance:</span><input type="number" value="${d.balance}" min="0" onchange="updateDebtBalance('${d.id}',this.value)" style="background:rgba(229,57,53,0.08);border:1px solid rgba(229,57,53,0.2);color:#ef9a9a;border-radius:6px;padding:5px 8px;width:120px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;outline:none;"><button class="btn btn-danger" style="padding:4px 8px;font-size:11px;" onclick="deleteDebt('${d.id}')">✕</button></div>`;
+    const editRow=ro?'':`<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;align-items:center;justify-content:flex-end;"><button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openPayDebtModal('${d.id}')">💳 Pay Debt</button><button class="btn btn-danger" style="padding:4px 8px;font-size:11px;" onclick="deleteDebt('${d.id}')">✕</button></div>`;
     return`<div class="debt-card"><div class="debt-header"><div><div class="debt-name">${d.name}</div><div class="debt-creditor">${d.creditor||'—'}</div></div><div style="text-align:right;"><div class="debt-balance">${peso(d.balance)}</div><div style="font-size:11px;color:var(--mid-grey);">Balance</div></div></div><div class="progress-wrap" style="margin-bottom:14px;"><div class="progress-fill" style="width:${Math.round(p*100)}%;background:linear-gradient(90deg,#2E7D32,#66bb6a);"></div></div><div class="debt-details"><div><div class="debt-detail-label">Original</div><div class="debt-detail-value">${peso(d.original)}</div></div><div><div class="debt-detail-label">Interest/mo</div><div class="debt-detail-value">${rd}</div></div><div><div class="debt-detail-label">Min Pay</div><div class="debt-detail-value">${peso(d.minPay)}</div></div><div><div class="debt-detail-label">% Paid</div><div class="debt-detail-value" style="color:#66bb6a;">${pct(p)}</div></div><div><div class="debt-detail-label">Mo. Left</div><div class="debt-detail-value">${ml}</div></div><div><div class="debt-detail-label">Status</div><div class="debt-detail-value" style="font-size:11px;">${debtStatus(d)}</div></div></div>${editRow}</div>`;
   }).join('');
 }
