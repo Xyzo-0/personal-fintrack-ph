@@ -1185,7 +1185,7 @@ function renderTransactions(){
   let txs=[...txForYear(y)];if(typeF)txs=txs.filter(t=>t.type===typeF);if(monthF)txs=txs.filter(t=>getMonth(t)===monthF);
   const body=document.getElementById('tx-table-body');
   if(!txs.length){body.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><p>No transactions for ${y} yet.</p></div></td></tr>`;return;}
-  body.innerHTML=txs.map(t=>`<tr><td class="mono muted">${t.date}</td><td><b>${t.desc}</b>${t.notes?`<br><span style="font-size:11px;color:var(--dark-grey);">${t.notes}</span>`:''}</td><td><span class="badge-type ${t.type==='Income'?'Inflow':'Outflow'}">${t.type}</span></td><td class="muted">${t.category}</td><td class="muted">${t.account}</td><td class="mono ${t.type==='Income'?'positive':'negative'}" style="text-align:right;">${peso(t.amount)}</td><td>${ro?'':` <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteTransaction('${t.id}')">✕</button>`}</td></tr>`).join('');
+  body.innerHTML=txs.map(t=>`<tr><td class="mono muted">${t.date}</td><td><b>${t.desc}</b>${t.notes?`<br><span style="font-size:11px;color:var(--dark-grey);">${t.notes}</span>`:''}</td><td><span class="badge-type ${t.type==='Income'?'badge-income':'badge-expense'}">${t.type==='Income'?'Inflow':'Outflow'}">${t.type}</span></td><td class="muted">${t.category}</td><td class="muted">${t.account}</td><td class="mono ${t.type==='Income'?'positive':'negative'}" style="text-align:right;">${peso(t.amount)}</td><td>${ro?'':` <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteTransaction('${t.id}')">✕</button>`}</td></tr>`).join('');
 }
 
 // ═══════════════════════════════════════════════
