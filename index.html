@@ -1155,7 +1155,15 @@ function updateBudget(month,cat,val){if(isReadonly())return;if(!state.budgets[mo
 // ═══════════════════════════════════════════════
 // SAVINGS
 // ═══════════════════════════════════════════════
-function openAddGoalModal(){openModal('modal-goal');}
+function openAddGoalModal(){
+  document.getElementById('goal-name').value='';
+  document.getElementById('goal-target').value='';
+  document.getElementById('goal-saved').value='';
+  document.getElementById('goal-contrib').value='';
+  document.getElementById('goal-priority').value='High';
+  document.getElementById('goal-date').value='';
+  openModal('modal-goal');
+}
 function addGoal(){
   if(isReadonly()){showToast('🔒 Read-only');return;}
   const name=document.getElementById('goal-name').value.trim();const target=parseFloat(document.getElementById('goal-target').value)||0;const saved=parseFloat(document.getElementById('goal-saved').value)||0;const contrib=parseFloat(document.getElementById('goal-contrib').value)||0;const prio=document.getElementById('goal-priority').value;const date=document.getElementById('goal-date').value;
@@ -1181,7 +1189,16 @@ function renderSavings(){
 // ═══════════════════════════════════════════════
 // DEBT
 // ═══════════════════════════════════════════════
-function openAddDebtModal(){openModal('modal-debt');}
+function openAddDebtModal(){
+  document.getElementById('debt-name').value='';
+  document.getElementById('debt-creditor').value='';
+  document.getElementById('debt-original').value='';
+  document.getElementById('debt-balance').value='';
+  document.getElementById('debt-rate').value='';
+  document.getElementById('debt-minpay').value='';
+  document.getElementById('debt-extra').value='';
+  openModal('modal-debt');
+}
 function addDebt(){
   if(isReadonly()){showToast('🔒 Read-only');return;}
   const name=document.getElementById('debt-name').value.trim();const creditor=document.getElementById('debt-creditor').value.trim();const original=parseFloat(document.getElementById('debt-original').value)||0;const balance=parseFloat(document.getElementById('debt-balance').value)||0;const rate=parseFloat(document.getElementById('debt-rate').value)||0;const minPay=parseFloat(document.getElementById('debt-minpay').value)||0;const extra=parseFloat(document.getElementById('debt-extra').value)||0;
