@@ -304,7 +304,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="sidebar-footer">
       <div style="position:relative;">
         <div class="settings-popup" id="settings-popup">
-          <div class="settings-popup-header">⚙️ Account</div>
+          <div class="settings-item" onclick="openProfileModal()"><span class="si-icon">👤</span> Account</div>
           <div class="settings-item" onclick="openSettingsModal()"><span class="si-icon">⚙️</span> Settings</div>
         </div>
         <div class="user-card" onclick="toggleSettingsPopup()" id="user-card">
@@ -492,6 +492,81 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </main>
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="modal-profile">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <span class="modal-title">👤 My Profile</span>
+      <button class="modal-close" onclick="closeModal('modal-profile')">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Avatar -->
+      <div style="text-align:center;margin-bottom:20px;">
+        <div id="profile-avatar-display" style="width:80px;height:80px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,var(--teal),var(--gold));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:var(--navy);overflow:hidden;border:3px solid var(--border);">
+          <span id="profile-avatar-letter">A</span>
+          <img id="profile-avatar-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
+        </div>
+        <div id="profile-photo-btn-wrap">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('profile-photo-input').click()">📷 Change Photo</button>
+          <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="uploadProfilePhoto(this)">
+        </div>
+        <div id="profile-photo-cooldown" style="font-size:11px;color:var(--dark-grey);margin-top:4px;display:none;"></div>
+      </div>
+
+      <!-- View mode -->
+      <div id="profile-view-mode">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="settings-row" style="padding:8px 0;">
+            <div class="settings-row-label">Full Name</div>
+            <span id="pv-name" class="settings-stat">—</span>
+          </div>
+          <div class="settings-row" style="padding:8px 0;">
+            <div class="settings-row-label">Username</div>
+            <span id="pv-username" class="settings-stat">—</span>
+          </div>
+          <div class="settings-row" style="padding:8px 0;">
+            <div class="settings-row-label">Birth Date</div>
+            <span id="pv-birthdate" class="settings-stat">—</span>
+          </div>
+          <div class="settings-row" style="padding:8px 0;">
+            <div class="settings-row-label">Email</div>
+            <span id="pv-email" class="settings-stat">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit mode -->
+      <div id="profile-edit-mode" style="display:none;">
+        <div class="form-row">
+          <div class="field-group" style="grid-column:span 2;">
+            <label>Full Name</label>
+            <input type="text" id="pe-name" placeholder="e.g. Juan dela Cruz">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-group" style="grid-column:span 2;">
+            <label>Birth Date</label>
+            <input type="date" id="pe-birthdate">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-group" style="grid-column:span 2;">
+            <label>Email</label>
+            <input type="email" id="pe-email" placeholder="e.g. juan@email.com">
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-profile')">Close</button>
+      <button class="btn btn-ghost" id="profile-edit-btn" onclick="toggleProfileEdit()">✏️ Edit</button>
+      <button class="btn btn-primary" id="profile-save-btn" style="display:none;" onclick="saveProfile()">💾 Save</button>
+    </div>
+  </div>
+</div>
+  
 <!-- CREATE ACCOUNT -->
 <div class="modal-overlay" id="modal-create-account">
   <div class="modal" style="max-width:420px;">
@@ -957,6 +1032,94 @@ function createAccount(){
 
 function getAccounts(){return LS.get('accounts')||{...USERS};}
 
+function openProfileModal(){
+  document.getElementById('settings-popup').classList.remove('open');
+  document.getElementById('user-menu-icon').textContent='▼';
+
+  const profile=LS.get('profile_'+currentUser)||{};
+
+  // Avatar
+  const letter=currentUser.charAt(0).toUpperCase();
+  document.getElementById('profile-avatar-letter').textContent=letter;
+  const img=document.getElementById('profile-avatar-img');
+  if(profile.photo){
+    img.src=profile.photo;img.style.display='block';
+    document.getElementById('profile-avatar-letter').style.display='none';
+  } else {
+    img.style.display='none';
+    document.getElementById('profile-avatar-letter').style.display='block';
+  }
+
+  // Photo cooldown check
+  const lastChange=profile.photoChangedAt?new Date(profile.photoChangedAt):null;
+  const now=new Date();
+  const daysSince=lastChange?Math.floor((now-lastChange)/(1000*60*60*24)):999;
+  const cooldownEl=document.getElementById('profile-photo-cooldown');
+  const btnWrap=document.getElementById('profile-photo-btn-wrap');
+  if(daysSince<30){
+    const daysLeft=30-daysSince;
+    cooldownEl.textContent=`Photo can be changed in ${daysLeft} day(s)`;
+    cooldownEl.style.display='block';
+    btnWrap.style.display='none';
+  } else {
+    cooldownEl.style.display='none';
+    btnWrap.style.display='block';
+  }
+
+  // View mode values
+  document.getElementById('pv-name').textContent=profile.name||'—';
+  document.getElementById('pv-username').textContent=currentUser;
+  document.getElementById('pv-birthdate').textContent=profile.birthdate||'—';
+  document.getElementById('pv-email').textContent=profile.email||'—';
+
+  // Reset to view mode
+  document.getElementById('profile-view-mode').style.display='block';
+  document.getElementById('profile-edit-mode').style.display='none';
+  document.getElementById('profile-edit-btn').style.display='';
+  document.getElementById('profile-save-btn').style.display='none';
+
+  openModal('modal-profile');
+}
+
+function toggleProfileEdit(){
+  const profile=LS.get('profile_'+currentUser)||{};
+  document.getElementById('pe-name').value=profile.name||'';
+  document.getElementById('pe-birthdate').value=profile.birthdate||'';
+  document.getElementById('pe-email').value=profile.email||'';
+  document.getElementById('profile-view-mode').style.display='none';
+  document.getElementById('profile-edit-mode').style.display='block';
+  document.getElementById('profile-edit-btn').style.display='none';
+  document.getElementById('profile-save-btn').style.display='';
+}
+
+function saveProfile(){
+  const profile=LS.get('profile_'+currentUser)||{};
+  profile.name=document.getElementById('pe-name').value.trim();
+  profile.birthdate=document.getElementById('pe-birthdate').value;
+  profile.email=document.getElementById('pe-email').value.trim();
+  LS.set('profile_'+currentUser,profile);
+  showToast('✅ Profile saved!');
+  openProfileModal(); // refresh view
+}
+
+function uploadProfilePhoto(input){
+  const file=input.files[0];if(!file)return;
+  const profile=LS.get('profile_'+currentUser)||{};
+  const lastChange=profile.photoChangedAt?new Date(profile.photoChangedAt):null;
+  const daysSince=lastChange?Math.floor((new Date()-lastChange)/(1000*60*60*24)):999;
+  if(daysSince<30){showToast(`⚠️ You can change your photo in ${30-daysSince} day(s)`);return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    profile.photo=e.target.result;
+    profile.photoChangedAt=new Date().toISOString();
+    LS.set('profile_'+currentUser,profile);
+    showToast('✅ Profile photo updated!');
+    openProfileModal();
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+  
 function onSettingsYearChange(){
   const y=parseInt(document.getElementById('settings-active-year').value);
   updateSettingsStats(y);
