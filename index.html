@@ -399,7 +399,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div id="budget-readonly-note"></div>
       <div class="month-tabs" id="budget-month-tabs"></div>
       <div class="panel">
-        <div class="panel-header"><span class="panel-title">📆 Budget vs Actual — <span id="budget-month-label">Jan</span></span></div>
+        <div class="panel-header">
+          <span class="panel-title">📆 Budget vs Actual — <span id="budget-month-label">Jan</span></span>
+          <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="refreshBudget()">🔄 Refresh</button>
+        </div>
         <div class="table-scroll">
           <table class="data-table">
             <thead><tr><th>Category</th><th style="text-align:right;">Budget (₱)</th><th style="text-align:right;">Actual (₱)</th><th style="text-align:right;">Difference</th><th>Progress</th><th>Status</th></tr></thead>
@@ -438,7 +441,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-ghost" onclick="openEditNWModal('assets')">± Assets</button>
           <button class="btn btn-ghost" onclick="openEditNWModal('liabilities')">± Liabilities</button>
-          <button class="btn btn-primary" onclick="saveNetWorth()">💾 Save</button>
         </div>
       </div>
       <div id="nw-readonly-note"></div>
@@ -536,7 +538,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="field-group"><label>Monthly Contribution (₱)</label><input type="number" id="goal-contrib" placeholder="0.00" min="0"></div>
         <div class="field-group"><label>Priority</label><select id="goal-priority"><option>High</option><option>Medium</option><option>Low</option></select></div>
       </div>
-      <div class="form-row"><div class="field-group"><label>Target Date</label><input type="date" id="goal-date"></div></div>
+      <div class="form-row"><div class="field-group"><label>Target Date <span style="color:var(--dark-grey);font-weight:400;letter-spacing:0;">(optional)</span></label><input type="date" id="goal-date"></div></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-goal')">Cancel</button><button class="btn btn-primary" onclick="addGoal()">Add Goal</button></div>
   </div>
@@ -1183,7 +1185,7 @@ function renderTransactions(){
   let txs=[...txForYear(y)];if(typeF)txs=txs.filter(t=>t.type===typeF);if(monthF)txs=txs.filter(t=>getMonth(t)===monthF);
   const body=document.getElementById('tx-table-body');
   if(!txs.length){body.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><p>No transactions for ${y} yet.</p></div></td></tr>`;return;}
-  body.innerHTML=txs.map(t=>`<tr><td class="mono muted">${t.date}</td><td><b>${t.desc}</b>${t.notes?`<br><span style="font-size:11px;color:var(--dark-grey);">${t.notes}</span>`:''}</td><td><span class="badge-type ${t.type==='Income'?'badge-income':'badge-expense'}">${t.type}</span></td><td class="muted">${t.category}</td><td class="muted">${t.account}</td><td class="mono ${t.type==='Income'?'positive':'negative'}" style="text-align:right;">${peso(t.amount)}</td><td>${ro?'':` <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteTransaction('${t.id}')">✕</button>`}</td></tr>`).join('');
+  body.innerHTML=txs.map(t=>`<tr><td class="mono muted">${t.date}</td><td><b>${t.desc}</b>${t.notes?`<br><span style="font-size:11px;color:var(--dark-grey);">${t.notes}</span>`:''}</td><td><span class="badge-type ${t.type==='Income'?'Inflow':'Outflow'}">${t.type}</span></td><td class="muted">${t.category}</td><td class="muted">${t.account}</td><td class="mono ${t.type==='Income'?'positive':'negative'}" style="text-align:right;">${peso(t.amount)}</td><td>${ro?'':` <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteTransaction('${t.id}')">✕</button>`}</td></tr>`).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -1223,6 +1225,12 @@ function renderBudget(){
     <td></td>
   </tr>`;
 }
+
+function refreshBudget(){
+  renderBudget();
+  showToast('🔄 Budget refreshed!');
+}
+
 function updateBudget(month,cat,val){if(isReadonly())return;if(!state.budgets[month])state.budgets[month]={};state.budgets[month][cat]=parseFloat(val)||0;saveData();renderBudget();showToast('💾 Budget updated');}
 
 // ═══════════════════════════════════════════════
