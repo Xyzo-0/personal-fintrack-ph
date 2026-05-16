@@ -377,7 +377,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <span class="panel-title">📅 All Transactions</span>
           <div style="display:flex;gap:8px;">
             <select id="filter-type" onchange="renderTransactions()" style="background:rgba(15,27,53,0.8);border:1px solid var(--border);color:var(--white);padding:6px 10px;border-radius:6px;font-size:12px;outline:none;">
-              <option value="">All Types</option><option value="Income">Income</option><option value="Expense">Expense</option>
+              <option value="">All Types</option><option value="Income">Inflow</option><option value="Expense">Outflow</option>
             </select>
             <select id="filter-month" onchange="renderTransactions()" style="background:rgba(15,27,53,0.8);border:1px solid var(--border);color:var(--white);padding:6px 10px;border-radius:6px;font-size:12px;outline:none;">
               <option value="">All Months</option>
@@ -513,7 +513,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
       <div class="form-row">
         <div class="field-group"><label>Account</label>
-          <select id="tx-account"><option>Cash</option><option>BDO Savings</option><option>BPI Savings</option><option>GCash</option><option>Maya</option><option>Credit Card</option><option>Investment Account</option></select>
+          <select id="tx-account"><option>Cash</option><option>Debit Card</option><option>Credit Card</option><option>Bank</option><option>Mobile Wallet</option><option>E-Bank</option><option>Investment Account</option></select>
         </div>
         <div class="field-group"><label>Notes (optional)</label><input type="text" id="tx-notes" placeholder="Any notes…"></div>
       </div>
